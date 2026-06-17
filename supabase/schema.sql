@@ -36,7 +36,7 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";     -- trigram indexes for SKU / narra
 -- Returns NULL for unauthenticated sessions and deactivated accounts.
 -- =============================================================================
 
-CREATE OR REPLACE FUNCTION auth.current_app_role()
+CREATE OR REPLACE FUNCTION public.current_app_role()
 RETURNS text
 LANGUAGE sql
 STABLE
@@ -51,7 +51,7 @@ AS $$
   LIMIT 1;
 $$;
 
-COMMENT ON FUNCTION auth.current_app_role() IS
+COMMENT ON FUNCTION public.current_app_role() IS
   'Returns admin | analyst | viewer for the current Supabase auth session. '
   'NULL = unauthenticated or deactivated account. '
   'Used by all RLS USING / WITH CHECK expressions.';
@@ -1266,7 +1266,7 @@ CREATE INDEX insights_category_active_idx
 --
 -- Principles:
 --   1. No anonymous (unauthenticated) access. Every policy calls
---      auth.current_app_role() which returns NULL for unauth sessions → denied.
+--      public.current_app_role() which returns NULL for unauth sessions → denied.
 --   2. The Supabase service role key (used by background jobs and data pipelines)
 --      bypasses RLS automatically — no explicit service-role policies needed.
 --   3. Write policies on imported tables (orders, shipments, etc.) are admin-only;
@@ -1305,174 +1305,174 @@ ALTER TABLE insights             ENABLE ROW LEVEL SECURITY;
 -- ---------------------------------------------------------------------------
 -- roles — admin only
 -- ---------------------------------------------------------------------------
-CREATE POLICY "roles_select_admin"  ON roles FOR SELECT USING (auth.current_app_role() = 'admin');
-CREATE POLICY "roles_insert_admin"  ON roles FOR INSERT WITH CHECK (auth.current_app_role() = 'admin');
-CREATE POLICY "roles_update_admin"  ON roles FOR UPDATE USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "roles_select_admin"  ON roles FOR SELECT USING (public.current_app_role() = 'admin');
+CREATE POLICY "roles_insert_admin"  ON roles FOR INSERT WITH CHECK (public.current_app_role() = 'admin');
+CREATE POLICY "roles_update_admin"  ON roles FOR UPDATE USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- users — admin only
 -- ---------------------------------------------------------------------------
-CREATE POLICY "users_select_admin"  ON users FOR SELECT USING (auth.current_app_role() = 'admin');
-CREATE POLICY "users_insert_admin"  ON users FOR INSERT WITH CHECK (auth.current_app_role() = 'admin');
-CREATE POLICY "users_update_admin"  ON users FOR UPDATE USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
-CREATE POLICY "users_delete_admin"  ON users FOR DELETE USING (auth.current_app_role() = 'admin');
+CREATE POLICY "users_select_admin"  ON users FOR SELECT USING (public.current_app_role() = 'admin');
+CREATE POLICY "users_insert_admin"  ON users FOR INSERT WITH CHECK (public.current_app_role() = 'admin');
+CREATE POLICY "users_update_admin"  ON users FOR UPDATE USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
+CREATE POLICY "users_delete_admin"  ON users FOR DELETE USING (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- expense_categories — analyst + admin read; admin write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "expense_categories_select" ON expense_categories FOR SELECT USING (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "expense_categories_write"  ON expense_categories FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "expense_categories_select" ON expense_categories FOR SELECT USING (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "expense_categories_write"  ON expense_categories FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- launches — all roles read; admin write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "launches_select" ON launches FOR SELECT USING (auth.current_app_role() IN ('admin','analyst','viewer'));
-CREATE POLICY "launches_write"  ON launches FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "launches_select" ON launches FOR SELECT USING (public.current_app_role() IN ('admin','analyst','viewer'));
+CREATE POLICY "launches_write"  ON launches FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- products — all roles read; admin write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "products_select" ON products FOR SELECT USING (auth.current_app_role() IN ('admin','analyst','viewer'));
-CREATE POLICY "products_write"  ON products FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "products_select" ON products FOR SELECT USING (public.current_app_role() IN ('admin','analyst','viewer'));
+CREATE POLICY "products_write"  ON products FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- product_variants — all roles read; admin write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "product_variants_select" ON product_variants FOR SELECT USING (auth.current_app_role() IN ('admin','analyst','viewer'));
-CREATE POLICY "product_variants_write"  ON product_variants FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "product_variants_select" ON product_variants FOR SELECT USING (public.current_app_role() IN ('admin','analyst','viewer'));
+CREATE POLICY "product_variants_write"  ON product_variants FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- inventory_batches — analyst + admin read; admin write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "inventory_batches_select" ON inventory_batches FOR SELECT USING (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "inventory_batches_write"  ON inventory_batches FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "inventory_batches_select" ON inventory_batches FOR SELECT USING (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "inventory_batches_write"  ON inventory_batches FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- inventory_ledger — analyst + admin read; admin INSERT only (append-only)
 -- No UPDATE or DELETE policies — rows must never be modified.
 -- ---------------------------------------------------------------------------
-CREATE POLICY "inventory_ledger_select" ON inventory_ledger FOR SELECT USING (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "inventory_ledger_insert" ON inventory_ledger FOR INSERT WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "inventory_ledger_select" ON inventory_ledger FOR SELECT USING (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "inventory_ledger_insert" ON inventory_ledger FOR INSERT WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- customers — admin only (PII: name, email, phone, address)
 -- Per BR-128 (PII handling) and BR-129 (financial data restrictions).
 -- ---------------------------------------------------------------------------
-CREATE POLICY "customers_select" ON customers FOR SELECT USING (auth.current_app_role() = 'admin');
-CREATE POLICY "customers_write"  ON customers FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "customers_select" ON customers FOR SELECT USING (public.current_app_role() = 'admin');
+CREATE POLICY "customers_write"  ON customers FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- orders — analyst + admin read; admin write (import pipeline)
 -- ---------------------------------------------------------------------------
-CREATE POLICY "orders_select" ON orders FOR SELECT USING (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "orders_write"  ON orders FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "orders_select" ON orders FOR SELECT USING (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "orders_write"  ON orders FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- order_lines — analyst + admin read; admin write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "order_lines_select" ON order_lines FOR SELECT USING (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "order_lines_write"  ON order_lines FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "order_lines_select" ON order_lines FOR SELECT USING (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "order_lines_write"  ON order_lines FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- shipments — analyst + admin read; admin write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "shipments_select" ON shipments FOR SELECT USING (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "shipments_write"  ON shipments FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "shipments_select" ON shipments FOR SELECT USING (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "shipments_write"  ON shipments FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- returns — analyst + admin read; admin write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "returns_select" ON returns FOR SELECT USING (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "returns_write"  ON returns FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "returns_select" ON returns FOR SELECT USING (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "returns_write"  ON returns FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- bank_transactions — admin only
 -- Per BR-129 (financial data restrictions): cash position is admin-only.
 -- ---------------------------------------------------------------------------
-CREATE POLICY "bank_transactions_select" ON bank_transactions FOR SELECT USING (auth.current_app_role() = 'admin');
-CREATE POLICY "bank_transactions_write"  ON bank_transactions FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "bank_transactions_select" ON bank_transactions FOR SELECT USING (public.current_app_role() = 'admin');
+CREATE POLICY "bank_transactions_write"  ON bank_transactions FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- gateway_settlements — admin only
 -- ---------------------------------------------------------------------------
-CREATE POLICY "gateway_settlements_select" ON gateway_settlements FOR SELECT USING (auth.current_app_role() = 'admin');
-CREATE POLICY "gateway_settlements_write"  ON gateway_settlements FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "gateway_settlements_select" ON gateway_settlements FOR SELECT USING (public.current_app_role() = 'admin');
+CREATE POLICY "gateway_settlements_write"  ON gateway_settlements FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- purchase_orders, purchase_order_lines — analyst + admin read; admin write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "purchase_orders_select" ON purchase_orders FOR SELECT USING (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "purchase_orders_write"  ON purchase_orders FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "purchase_orders_select" ON purchase_orders FOR SELECT USING (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "purchase_orders_write"  ON purchase_orders FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
-CREATE POLICY "purchase_order_lines_select" ON purchase_order_lines FOR SELECT USING (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "purchase_order_lines_write"  ON purchase_order_lines FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "purchase_order_lines_select" ON purchase_order_lines FOR SELECT USING (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "purchase_order_lines_write"  ON purchase_order_lines FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- launch_expenses — analyst + admin read/write
 -- Per schema doc: "expenses, launch_expenses — analyst, admin — analyst, admin"
 -- ---------------------------------------------------------------------------
-CREATE POLICY "launch_expenses_select"       ON launch_expenses FOR SELECT USING  (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "launch_expenses_insert"       ON launch_expenses FOR INSERT WITH CHECK (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "launch_expenses_update"       ON launch_expenses FOR UPDATE USING  (auth.current_app_role() IN ('admin','analyst')) WITH CHECK (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "launch_expenses_delete_admin" ON launch_expenses FOR DELETE USING  (auth.current_app_role() = 'admin');
+CREATE POLICY "launch_expenses_select"       ON launch_expenses FOR SELECT USING  (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "launch_expenses_insert"       ON launch_expenses FOR INSERT WITH CHECK (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "launch_expenses_update"       ON launch_expenses FOR UPDATE USING  (public.current_app_role() IN ('admin','analyst')) WITH CHECK (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "launch_expenses_delete_admin" ON launch_expenses FOR DELETE USING  (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- ad_campaigns — analyst + admin read; admin write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "ad_campaigns_select" ON ad_campaigns FOR SELECT USING (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "ad_campaigns_write"  ON ad_campaigns FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "ad_campaigns_select" ON ad_campaigns FOR SELECT USING (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "ad_campaigns_write"  ON ad_campaigns FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- ad_spend_daily — analyst + admin read; admin write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "ad_spend_daily_select" ON ad_spend_daily FOR SELECT USING (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "ad_spend_daily_write"  ON ad_spend_daily FOR ALL    USING (auth.current_app_role() = 'admin') WITH CHECK (auth.current_app_role() = 'admin');
+CREATE POLICY "ad_spend_daily_select" ON ad_spend_daily FOR SELECT USING (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "ad_spend_daily_write"  ON ad_spend_daily FOR ALL    USING (public.current_app_role() = 'admin') WITH CHECK (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- expenses — analyst + admin read/write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "expenses_select"       ON expenses FOR SELECT USING  (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "expenses_insert"       ON expenses FOR INSERT WITH CHECK (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "expenses_update"       ON expenses FOR UPDATE USING  (auth.current_app_role() IN ('admin','analyst')) WITH CHECK (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "expenses_delete_admin" ON expenses FOR DELETE USING  (auth.current_app_role() = 'admin');
+CREATE POLICY "expenses_select"       ON expenses FOR SELECT USING  (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "expenses_insert"       ON expenses FOR INSERT WITH CHECK (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "expenses_update"       ON expenses FOR UPDATE USING  (public.current_app_role() IN ('admin','analyst')) WITH CHECK (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "expenses_delete_admin" ON expenses FOR DELETE USING  (public.current_app_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
 -- kpi_daily_snapshot — all roles read; no user-facing writes (service role only)
 -- ---------------------------------------------------------------------------
-CREATE POLICY "kpi_daily_snapshot_select" ON kpi_daily_snapshot FOR SELECT USING (auth.current_app_role() IN ('admin','analyst','viewer'));
+CREATE POLICY "kpi_daily_snapshot_select" ON kpi_daily_snapshot FOR SELECT USING (public.current_app_role() IN ('admin','analyst','viewer'));
 
 -- ---------------------------------------------------------------------------
 -- kpi_monthly_snapshot — all roles read; no user-facing writes (service role only)
 -- ---------------------------------------------------------------------------
-CREATE POLICY "kpi_monthly_snapshot_select" ON kpi_monthly_snapshot FOR SELECT USING (auth.current_app_role() IN ('admin','analyst','viewer'));
+CREATE POLICY "kpi_monthly_snapshot_select" ON kpi_monthly_snapshot FOR SELECT USING (public.current_app_role() IN ('admin','analyst','viewer'));
 
 -- ---------------------------------------------------------------------------
 -- revenue_forecasts — analyst + admin read/write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "revenue_forecasts_select" ON revenue_forecasts FOR SELECT USING  (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "revenue_forecasts_insert" ON revenue_forecasts FOR INSERT WITH CHECK (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "revenue_forecasts_update" ON revenue_forecasts FOR UPDATE USING  (auth.current_app_role() IN ('admin','analyst')) WITH CHECK (auth.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "revenue_forecasts_select" ON revenue_forecasts FOR SELECT USING  (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "revenue_forecasts_insert" ON revenue_forecasts FOR INSERT WITH CHECK (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "revenue_forecasts_update" ON revenue_forecasts FOR UPDATE USING  (public.current_app_role() IN ('admin','analyst')) WITH CHECK (public.current_app_role() IN ('admin','analyst'));
 
 -- ---------------------------------------------------------------------------
 -- cashflow_forecasts — analyst + admin read/write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "cashflow_forecasts_select" ON cashflow_forecasts FOR SELECT USING  (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "cashflow_forecasts_insert" ON cashflow_forecasts FOR INSERT WITH CHECK (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "cashflow_forecasts_update" ON cashflow_forecasts FOR UPDATE USING  (auth.current_app_role() IN ('admin','analyst')) WITH CHECK (auth.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "cashflow_forecasts_select" ON cashflow_forecasts FOR SELECT USING  (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "cashflow_forecasts_insert" ON cashflow_forecasts FOR INSERT WITH CHECK (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "cashflow_forecasts_update" ON cashflow_forecasts FOR UPDATE USING  (public.current_app_role() IN ('admin','analyst')) WITH CHECK (public.current_app_role() IN ('admin','analyst'));
 
 -- ---------------------------------------------------------------------------
 -- inventory_forecasts — analyst + admin read/write
 -- ---------------------------------------------------------------------------
-CREATE POLICY "inventory_forecasts_select" ON inventory_forecasts FOR SELECT USING  (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "inventory_forecasts_insert" ON inventory_forecasts FOR INSERT WITH CHECK (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "inventory_forecasts_update" ON inventory_forecasts FOR UPDATE USING  (auth.current_app_role() IN ('admin','analyst')) WITH CHECK (auth.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "inventory_forecasts_select" ON inventory_forecasts FOR SELECT USING  (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "inventory_forecasts_insert" ON inventory_forecasts FOR INSERT WITH CHECK (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "inventory_forecasts_update" ON inventory_forecasts FOR UPDATE USING  (public.current_app_role() IN ('admin','analyst')) WITH CHECK (public.current_app_role() IN ('admin','analyst'));
 
 -- ---------------------------------------------------------------------------
 -- insights — all roles read; analyst + admin can dismiss; system inserts
 -- ---------------------------------------------------------------------------
-CREATE POLICY "insights_select"        ON insights FOR SELECT USING  (auth.current_app_role() IN ('admin','analyst','viewer'));
-CREATE POLICY "insights_update_dismiss"ON insights FOR UPDATE USING  (auth.current_app_role() IN ('admin','analyst')) WITH CHECK (auth.current_app_role() IN ('admin','analyst'));
-CREATE POLICY "insights_delete_admin"  ON insights FOR DELETE USING  (auth.current_app_role() = 'admin');
+CREATE POLICY "insights_select"        ON insights FOR SELECT USING  (public.current_app_role() IN ('admin','analyst','viewer'));
+CREATE POLICY "insights_update_dismiss"ON insights FOR UPDATE USING  (public.current_app_role() IN ('admin','analyst')) WITH CHECK (public.current_app_role() IN ('admin','analyst'));
+CREATE POLICY "insights_delete_admin"  ON insights FOR DELETE USING  (public.current_app_role() = 'admin');
 
 -- =============================================================================
 -- END OF SCHEMA
