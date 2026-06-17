@@ -1,0 +1,16 @@
+
+# Business Data
+imports/raw/*
+imports/processed/*
+imports/archive/*
+
+# Uploaded files
+*.xlsx
+*.xls
+*.csv
+*.zip
+
+# Secrets
+.env
+.env.local
+.env.production
