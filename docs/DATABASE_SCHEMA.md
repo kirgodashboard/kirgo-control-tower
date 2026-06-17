@@ -10,6 +10,7 @@
 |---------|------|---------|
 | v1 | 2026-06-17 | Initial schema — 17 tables across 4 domains |
 | v2 | 2026-06-17 | +10 tables across 3 new domains; `launch_expenses.category` normalised to FK |
+| v2.2 | 2026-06-17 | +2 tables: `import_runs`, `import_errors` (Domain 8: Import Tracking) |
 
 ---
 
@@ -44,6 +45,8 @@
 | 25 | cashflow_forecasts | Intelligence | **v2** |
 | 26 | inventory_forecasts | Intelligence | **v2** |
 | 27 | insights | Intelligence | **v2** |
+| 28 | import_runs | Import Tracking | **v2.2** |
+| 29 | import_errors | Import Tracking | **v2.2** |
 
 ---
 
@@ -751,6 +754,69 @@ Meta: ₹10,000 funded (no campaign breakdown available)
 
 ---
 
+## Domain 8: Import Tracking *(new in v2.2)*
+
+### `import_runs`
+
+**Business purpose:** One row per import pipeline execution. Records how many rows were imported, skipped as duplicates, rejected as errors, and flagged with warnings — giving the admin a complete audit trail of every data load. Also stores the outcome of the reconciliation checks that run after each import. Without this table, there is no way to know when data was last refreshed, whether any rows were silently dropped, or whether a KPI snapshot was computed from clean data.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | serial | PK | |
+| source | text | NOT NULL | `woocommerce` / `shiprocket` / `returns` / `purchase_invoices` / `bank_statement` / `marketing_spend` |
+| source_file | text | | Filename of the imported file |
+| source_sheet | text | | Sheet name within the file (e.g. `SR - 2026`) |
+| run_started_at | timestamptz | NOT NULL DEFAULT now() | |
+| run_completed_at | timestamptz | | NULL while running |
+| status | text | NOT NULL DEFAULT 'running' | `running` / `completed` / `failed` / `partial` |
+| rows_in_source | int | | Total rows read from source file |
+| rows_imported | int | NOT NULL DEFAULT 0 | Rows successfully written to the database |
+| rows_skipped_duplicate | int | NOT NULL DEFAULT 0 | Rows matched an existing dedup key and were intentionally skipped |
+| rows_failed | int | NOT NULL DEFAULT 0 | Rows rejected due to a hard validation error |
+| rows_warnings | int | NOT NULL DEFAULT 0 | Rows imported but with a DQ_WARN or RECONCILE_WARN flag |
+| reconciliation_status | text | NOT NULL DEFAULT 'pending' | `pending` / `passed` / `failed` / `flagged` / `skipped` |
+| reconciliation_run_at | timestamptz | | When reconciliation checks were last run |
+| reconciliation_notes | text | | Summary of any reconciliation issues found |
+| hard_checks_passed | int | | Count of HARD reconciliation checks that passed |
+| hard_checks_failed | int | | Count of HARD reconciliation checks that failed |
+| soft_checks_passed | int | | Count of SOFT reconciliation checks that passed |
+| soft_checks_warned | int | | Count of SOFT checks that raised a warning |
+| triggered_by | int | FK → users.id | User who initiated the import |
+| error_summary | text | | Brief description of any fatal error |
+| notes | text | | Operator notes about this import run |
+| created_at | timestamptz | NOT NULL DEFAULT now() | |
+
+**Status lifecycle:** `running` → `completed` (all rows processed, 0 HARD errors) / `partial` (some rows failed) / `failed` (fatal error before completion)
+
+**Reconciliation lifecycle:** `pending` → `passed` (all checks green) / `flagged` (SOFT warnings present) / `failed` (HARD check failed; blocks KPI compute) / `skipped` (admin override)
+
+---
+
+### `import_errors`
+
+**Business purpose:** One row per rejected or flagged source row from any import run. Preserves the complete original source data as a JSONB snapshot so that each error can be investigated and re-imported after the root cause is fixed. Distinguishes between hard errors (row excluded from DB), warnings (row imported with a flag), and info messages (row skipped as expected duplicate). Together with `import_runs`, forms the complete import audit trail.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | serial | PK | |
+| import_run_id | int | FK → import_runs.id NOT NULL | The import run that produced this error |
+| row_number | int | | Row number in the source file (for locating the problem) |
+| source_row_snapshot | jsonb | | Full JSON copy of the source row — enables re-import after fix |
+| error_code | text | NOT NULL | Machine-readable code from IMPORT_ARCHITECTURE.md (e.g. `DUPLICATE_AWB`, `UNRESOLVED_SKU`) |
+| error_message | text | NOT NULL | Human-readable description of the problem |
+| severity | text | NOT NULL DEFAULT 'error' | `error` (row excluded) / `warning` (row imported with flag) / `info` (expected skip) |
+| field_name | text | | Specific column that caused the error |
+| field_value_raw | text | | Raw value of the offending field |
+| resolution_status | text | NOT NULL DEFAULT 'unresolved' | `unresolved` / `resolved` / `ignored` / `deferred` |
+| resolved_by | int | FK → users.id | User who resolved or ignored this error |
+| resolved_at | timestamptz | | |
+| resolution_notes | text | | What was done to fix or dismiss this error |
+| created_at | timestamptz | NOT NULL DEFAULT now() | |
+
+**Error code reference:** 24 codes defined in IMPORT_STATUS_TRACKING.md §Error Code Reference (e.g. `DUPLICATE_ORDER`, `ORPHAN_SHIPMENT`, `BALANCE_BREAK`, `UNRESOLVED_SKU`, `DATE_SEQ_ERROR`, `FIELD_REJECTED`).
+
+---
+
 ## Key Indexes (Advisory)
 
 | Table | Columns | Reason |
@@ -773,6 +839,11 @@ Meta: ₹10,000 funded (no campaign breakdown available)
 | insights | insight_date, severity | Dashboard priority sort |
 | insights | is_dismissed, category | Active insight filter |
 | expenses | expense_date, category_id | P&L period queries |
+| import_runs | source, run_completed_at | Last-run-per-source dashboard query |
+| import_runs | status, reconciliation_status | Pipeline health filter |
+| import_errors | import_run_id | Join from import_runs |
+| import_errors | error_code, resolution_status | Open error queue |
+| import_errors | severity, resolution_status | Alert triage |
 
 ---
 
@@ -787,6 +858,7 @@ Meta: ₹10,000 funded (no campaign breakdown available)
 | `insights` | `viewer`, `analyst`, `admin` | System · dismiss by `analyst`, `admin` |
 | `expenses`, `launch_expenses` | `analyst`, `admin` | `analyst`, `admin` |
 | `users`, `roles` | `admin` only | `admin` only |
+| `import_runs`, `import_errors` | `admin` only | `admin` only (service role for pipeline writes) |
 | No table | public | — |
 
 ---
@@ -858,5 +930,10 @@ users
     ├── expenses.created_by
     ├── revenue_forecasts.created_by
     ├── cashflow_forecasts.created_by
-    └── insights.dismissed_by
+    ├── insights.dismissed_by
+    ├── import_runs.triggered_by
+    └── import_errors.resolved_by
+
+import_runs
+    └── import_errors.import_run_id
 ```
