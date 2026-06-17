@@ -29,34 +29,6 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";   -- uuid_generate_v4()
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";     -- trigram indexes for SKU / narration text search
 
 -- =============================================================================
--- HELPER FUNCTION
--- Resolves the role code for the currently authenticated Supabase user.
--- Used by every RLS policy. SECURITY DEFINER runs as the function owner,
--- so it can always read the users and roles tables regardless of RLS.
--- Returns NULL for unauthenticated sessions and deactivated accounts.
--- =============================================================================
-
-CREATE OR REPLACE FUNCTION public.current_app_role()
-RETURNS text
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT r.code
-  FROM public.users u
-  JOIN public.roles r ON r.id = u.role_id
-  WHERE u.auth_user_id = auth.uid()
-    AND u.is_active = true
-  LIMIT 1;
-$$;
-
-COMMENT ON FUNCTION public.current_app_role() IS
-  'Returns admin | analyst | viewer for the current Supabase auth session. '
-  'NULL = unauthenticated or deactivated account. '
-  'Used by all RLS USING / WITH CHECK expressions.';
-
--- =============================================================================
 -- DOMAIN 5: ACCESS CONTROL
 -- Created first — users is referenced by expenses, forecasts, and insights.
 -- =============================================================================
@@ -122,6 +94,33 @@ COMMENT ON TABLE  users              IS 'Application user profiles. Extends Supa
 COMMENT ON COLUMN users.auth_user_id IS 'UUID from auth.users. Join key back to Supabase auth.';
 COMMENT ON COLUMN users.id           IS 'Surrogate integer key used in all FK references within the schema.';
 COMMENT ON COLUMN users.is_active    IS 'Soft deactivation. Set false instead of deleting; deactivated users lose all RLS access.';
+
+-- =============================================================================
+-- HELPER FUNCTION
+-- Created after roles + users so PostgreSQL can validate the function body.
+-- SECURITY DEFINER runs as the function owner, bypassing RLS on users/roles.
+-- Returns NULL for unauthenticated sessions and deactivated accounts.
+-- =============================================================================
+
+CREATE OR REPLACE FUNCTION public.current_app_role()
+RETURNS text
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT r.code
+  FROM public.users u
+  JOIN public.roles r ON r.id = u.role_id
+  WHERE u.auth_user_id = auth.uid()
+    AND u.is_active = true
+  LIMIT 1;
+$$;
+
+COMMENT ON FUNCTION public.current_app_role() IS
+  'Returns admin | analyst | viewer for the current Supabase auth session. '
+  'NULL = unauthenticated or deactivated account. '
+  'Used by all RLS USING / WITH CHECK expressions.';
 
 -- =============================================================================
 -- DOMAIN 6: OPERATIONAL EXPENSES
