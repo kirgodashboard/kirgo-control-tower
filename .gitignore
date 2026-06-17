@@ -10,6 +10,9 @@ imports/archive/*
 *.csv
 *.zip
 
+# Config CSVs tracked in version control (override the *.csv rule above)
+!imports/config/*.csv
+
 # Secrets
 .env
 .env.local
