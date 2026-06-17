@@ -289,20 +289,28 @@ FROM (
 ) AS p (launch_code, name, product_type, is_bundle, sp, mfg, shoot, pkg)
 JOIN launches l ON l.code = p.launch_code;
 
--- Bundle products inserted separately (bundle_leggings_id and bundle_bra_id reference the rows above)
+-- Bundle products: component IDs resolved via subquery so the bundle_completeness CHECK passes.
 -- Classic Set: L1 Leggings COGS(1167) + L1 Bra COGS(1167) + 75 pkg − duplicate pkg = 2259
 -- Summer Set:  L2 Leggings COGS(847)  + L2 Bra COGS(847)  + 75 pkg − duplicate pkg = 1619
 -- Core Set:    L3 Leggings COGS(1139) + L3 Bra COGS(1139) + 75 pkg − duplicate pkg = 2203
--- NOTE: bundle_leggings_id / bundle_bra_id are set by a post-insert UPDATE once all product IDs are known.
 INSERT INTO products
-  (launch_id, name, product_type, is_bundle, selling_price_inr, cogs_manufacture_inr, cogs_shoot_import_inr, cogs_shipping_pkg_inr)
-SELECT l.id, p.name, 'set', true, p.sp, p.mfg, p.shoot, p.pkg
+  (launch_id, name, product_type, is_bundle,
+   bundle_leggings_id, bundle_bra_id,
+   selling_price_inr, cogs_manufacture_inr, cogs_shoot_import_inr, cogs_shipping_pkg_inr)
+SELECT
+  l.id,
+  p.name,
+  'set',
+  true,
+  (SELECT id FROM products WHERE name = p.legs_name LIMIT 1),
+  (SELECT id FROM products WHERE name = p.bra_name  LIMIT 1),
+  p.sp, p.mfg, p.shoot, p.pkg
 FROM (
   VALUES
-    ('L1', 'Classic Set', 3298.00, 1920.00, 274.00, 65.00),
-    ('L2', 'Summer Set',  3298.00, 1340.00, 194.00, 85.00),
-    ('L3', 'Core Set',    3798.00, 1920.00, 218.00, 65.00)
-) AS p (launch_code, name, sp, mfg, shoot, pkg)
+    ('L1', 'Classic Set', 'Classic Leggings',   'Classic Sports Bra', 3298.00, 1920.00, 274.00, 65.00),
+    ('L2', 'Summer Set',  'Summer Leggings',    'Summer Sports Bra',  3298.00, 1340.00, 194.00, 85.00),
+    ('L3', 'Core Set',    'Core Leggings',      'Core Sports Bra',    3798.00, 1920.00, 218.00, 65.00)
+) AS p (launch_code, name, legs_name, bra_name, sp, mfg, shoot, pkg)
 JOIN launches l ON l.code = p.launch_code;
 
 -- ---------------------------------------------------------------------------
