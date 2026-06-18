@@ -9,7 +9,7 @@ export function TopCitiesTable() {
   const maxRevenue = data.length > 0 ? Math.max(...data.map((r) => Number(r.revenue_inr))) : 1;
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <div className="rounded-xl border border-border bg-card p-5">
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-4">
         Top Cities by Revenue
       </p>
@@ -31,7 +31,7 @@ export function TopCitiesTable() {
                 <tr key={i} className="border-b border-border/50">
                   {Array.from({ length: 6 }).map((_, j) => (
                     <td key={j} className="py-3 pr-4">
-                      <div className="h-3 rounded bg-muted animate-pulse" style={{ width: j === 2 ? "100px" : "60px" }} />
+                      <div className="h-3 rounded skeleton" style={{ width: j === 2 ? "100px" : "60px" }} />
                     </td>
                   ))}
                 </tr>

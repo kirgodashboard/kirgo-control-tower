@@ -19,7 +19,7 @@ export function CodTable() {
   const totalOutstanding = outstanding.reduce((s, r) => s + Number(r.cod_payable_inr), 0);
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <div className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-center justify-between mb-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           COD Reconciliation
@@ -47,7 +47,7 @@ export function CodTable() {
                 <tr key={i} className="border-b border-border/50">
                   {Array.from({ length: 5 }).map((_, j) => (
                     <td key={j} className="py-3 pr-4">
-                      <div className="h-3 rounded bg-muted animate-pulse" style={{ width: "60px" }} />
+                      <div className="h-3 rounded skeleton" style={{ width: "60px" }} />
                     </td>
                   ))}
                 </tr>

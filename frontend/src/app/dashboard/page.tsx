@@ -6,27 +6,20 @@ export const metadata = { title: "Command Center · Kirgo" };
 
 export default function DirectorCommandCenterPage() {
   return (
-    <div className="director-canvas min-h-full p-5 space-y-5">
-      {/* Header */}
+    <div className="min-h-full p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold text-white tracking-tight">
-            Command Center
-          </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <h1 className="text-[17px] font-bold text-foreground tracking-tight">Command Center</h1>
+          <p className="text-[12px] text-muted-foreground mt-0.5">
             Business health snapshot · auto-refreshes every 2 min
           </p>
         </div>
       </div>
 
-      {/* 8 KPI cards + system status */}
       <DirectorKpiRow />
-
-      {/* Revenue + Orders + Cash trends */}
       <DirectorTrendRow />
 
-      {/* Alert panel */}
-      <div className="director-card rounded-lg border border-zinc-800 p-5">
+      <div className="rounded-xl border border-border bg-card p-5">
         <AlertPanel />
       </div>
     </div>

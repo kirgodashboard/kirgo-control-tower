@@ -20,11 +20,6 @@ interface CashFlowEntry {
   net_inr: number;
 }
 
-interface CashFlowAreaChartProps {
-  data: CashFlowEntry[];
-  height?: number;
-}
-
 interface TooltipPayloadEntry {
   name: string;
   value: number;
@@ -38,80 +33,71 @@ function CustomTooltip({ active, payload, label }: {
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div
-      style={{
-        background: "hsl(var(--popover))",
-        border: "1px solid hsl(var(--border))",
-        borderRadius: 6,
-        padding: "8px 12px",
-        fontSize: 12,
-      }}
-    >
-      <p className="font-medium mb-1">{label ? formatDate(label) : ""}</p>
+    <div className="rounded-lg border border-border bg-popover px-3 py-2.5 shadow-xl text-[12px]">
+      <p className="text-muted-foreground mb-1.5 font-medium">{label ? formatDate(label) : ""}</p>
       {payload.map((p) => (
-        <p key={p.name} style={{ color: p.color }}>
-          {p.name}: {formatINR(p.value, false)}
-        </p>
+        <div key={p.name} className="flex items-center justify-between gap-4">
+          <span style={{ color: p.color }} className="font-medium">{p.name}</span>
+          <span className="tabular-nums text-foreground">{formatINR(p.value, false)}</span>
+        </div>
       ))}
     </div>
   );
 }
 
-export function CashFlowAreaChart({ data, height = 200 }: CashFlowAreaChartProps) {
+export function CashFlowAreaChart({ data, height = 220 }: { data: CashFlowEntry[]; height?: number }) {
   if (!data || data.length === 0) {
     return (
-      <div
-        className="flex items-center justify-center text-xs text-muted-foreground"
-        style={{ height }}
-      >
-        No data
+      <div className="flex items-center justify-center text-[12px] text-muted-foreground" style={{ height }}>
+        No cash flow data for this period
       </div>
     );
   }
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <ComposedChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 8 }}>
+      <ComposedChart data={data} margin={{ top: 6, right: 2, bottom: 0, left: 0 }}>
         <defs>
           <linearGradient id="inflowGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+            <stop offset="0%" stopColor="#10b981" stopOpacity={0.2} />
+            <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+        <CartesianGrid strokeDasharray="4 4" stroke="hsl(var(--border))" vertical={false} />
         <XAxis
           dataKey="transaction_date"
-          tickFormatter={(v) => {
-            const d = new Date(v);
-            return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
-          }}
-          tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+          tickFormatter={(v) => new Date(v).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+          tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
           axisLine={false}
           tickLine={false}
+          tickMargin={8}
         />
         <YAxis
           tickFormatter={(v) => formatINR(v)}
-          tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+          tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
           axisLine={false}
           tickLine={false}
-          width={52}
+          width={56}
         />
-        <Tooltip content={<CustomTooltip />} />
+        <Tooltip content={<CustomTooltip />} cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1.5 }} />
+        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
         <Area
           type="monotone"
           dataKey="inflow_inr"
           name="Inflow"
           stroke="#10b981"
-          strokeWidth={1.5}
+          strokeWidth={2}
           fill="url(#inflowGrad)"
           isAnimationActive={false}
+          dot={false}
         />
         <Bar
           dataKey="outflow_inr"
           name="Outflow"
           fill="#ef4444"
-          opacity={0.6}
+          fillOpacity={0.55}
           radius={[2, 2, 0, 0]}
+          maxBarSize={16}
           isAnimationActive={false}
         />
       </ComposedChart>

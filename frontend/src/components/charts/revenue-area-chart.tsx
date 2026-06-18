@@ -15,74 +15,80 @@ interface RevenueAreaChartProps {
   data: Array<{ period: string; revenue_inr: number }>;
   height?: number;
   compact?: boolean;
+  color?: string;
 }
+
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-lg border border-border bg-popover px-3 py-2 shadow-xl text-[12px]">
+      <p className="text-muted-foreground mb-1">{formatDate(label ?? "")}</p>
+      <p className="font-semibold text-foreground tabular-nums">{formatINR(payload[0].value, false)}</p>
+    </div>
+  );
+};
 
 export function RevenueAreaChart({
   data,
-  height = 200,
+  height = 220,
   compact = false,
+  color = "#8b5cf6",
 }: RevenueAreaChartProps) {
   if (!data || data.length === 0) {
     return (
       <div
-        className="flex items-center justify-center text-xs text-muted-foreground"
+        className="flex flex-col items-center justify-center gap-2 text-muted-foreground"
         style={{ height }}
       >
-        No data
+        <p className="text-[12px]">No data for this period</p>
       </div>
     );
   }
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: compact ? 0 : 8 }}>
+      <AreaChart data={data} margin={{ top: 6, right: 2, bottom: 0, left: compact ? -20 : 0 }}>
         <defs>
-          <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+          <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity={0.25} />
+            <stop offset="100%" stopColor={color} stopOpacity={0} />
           </linearGradient>
         </defs>
         {!compact && (
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+          <CartesianGrid
+            strokeDasharray="4 4"
+            stroke="hsl(var(--border))"
+            vertical={false}
+          />
         )}
         {!compact && (
           <XAxis
             dataKey="period"
-            tickFormatter={(v) => {
-              const d = new Date(v);
-              return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
-            }}
-            tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+            tickFormatter={(v) => new Date(v).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+            tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))", fontWeight: 400 }}
             axisLine={false}
             tickLine={false}
+            tickMargin={8}
           />
         )}
         {!compact && (
           <YAxis
             tickFormatter={(v) => formatINR(v)}
-            tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+            tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))", fontWeight: 400 }}
             axisLine={false}
             tickLine={false}
-            width={52}
+            width={56}
           />
         )}
-        <Tooltip
-          formatter={(v) => [formatINR(v as number, false), "Revenue"]}
-          labelFormatter={(l) => formatDate(l)}
-          contentStyle={{
-            background: "hsl(var(--popover))",
-            border: "1px solid hsl(var(--border))",
-            borderRadius: "6px",
-            fontSize: 12,
-          }}
-        />
+        <Tooltip content={<CustomTooltip />} cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1.5 }} />
         <Area
           type="monotone"
           dataKey="revenue_inr"
-          stroke="#8b5cf6"
+          stroke={color}
           strokeWidth={2}
-          fill="url(#revenueGrad)"
+          fill="url(#revGrad)"
           isAnimationActive={false}
+          dot={false}
         />
       </AreaChart>
     </ResponsiveContainer>

@@ -15,12 +15,12 @@ export function CustomerGrowthChart() {
   }));
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <div className="rounded-xl border border-border bg-card p-5">
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-4">
         Customer Growth
       </p>
       {isLoading ? (
-        <div className="h-52 bg-muted animate-pulse rounded" />
+        <div className="h-52 rounded-lg skeleton" />
       ) : chartData.length === 0 ? (
         <div className="h-52 flex items-center justify-center text-xs text-muted-foreground">No data</div>
       ) : (

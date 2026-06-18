@@ -7,7 +7,7 @@ export function LaunchTable() {
   const { data = [], isLoading } = useLaunchPerformance();
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <div className="rounded-xl border border-border bg-card p-5">
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-4">
         Launch Performance
       </p>
@@ -28,7 +28,7 @@ export function LaunchTable() {
                 <tr key={i} className="border-b border-border/50">
                   {Array.from({ length: 5 }).map((_, j) => (
                     <td key={j} className="py-3 pr-4">
-                      <div className="h-3 rounded bg-muted animate-pulse" style={{ width: j === 0 ? "120px" : "60px" }} />
+                      <div className="h-3 rounded skeleton" style={{ width: j === 0 ? "120px" : "60px" }} />
                     </td>
                   ))}
                 </tr>

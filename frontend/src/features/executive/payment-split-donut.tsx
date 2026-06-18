@@ -21,17 +21,17 @@ export function PaymentSplitDonut({ start, end }: Props) {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-border bg-card p-5">
+      <div className="rounded-xl border border-border bg-card p-5">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-4">Payment Split</p>
         <div className="h-44 flex items-center justify-center">
-          <div className="h-32 w-32 rounded-full bg-muted animate-pulse" />
+          <div className="h-32 w-32 rounded-full skeleton" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <div className="rounded-xl border border-border bg-card p-5">
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Payment Split</p>
       <p className="text-xs text-muted-foreground mb-4">COD vs Prepaid for period</p>
       <ResponsiveContainer width="100%" height={176}>

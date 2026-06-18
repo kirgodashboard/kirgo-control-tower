@@ -26,7 +26,7 @@ export function RevenueTrendPanel() {
   const { data = [], isLoading } = useRevenueTrend(range.start, range.end, grain);
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5 flex flex-col gap-4">
+    <div className="rounded-xl border border-border bg-card p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex gap-1">
           {(["revenue", "orders"] as Tab[]).map((t) => (
@@ -61,9 +61,7 @@ export function RevenueTrendPanel() {
       </div>
 
       {isLoading ? (
-        <div className="h-52 flex items-center justify-center text-xs text-muted-foreground">
-          Loading...
-        </div>
+        <div className="h-52 rounded-lg skeleton" />
       ) : tab === "revenue" ? (
         <RevenueAreaChart data={data} height={208} />
       ) : (

@@ -2,7 +2,6 @@
 
 import { useSystemAlerts } from "@/lib/hooks/use-director-snapshot";
 import { AlertCard, AlertCardSkeleton } from "./alert-card";
-import { SectionHeader } from "@/components/ui/section-header";
 import { CheckCircle } from "lucide-react";
 
 export function AlertPanel() {
@@ -13,18 +12,17 @@ export function AlertPanel() {
     alerts?.length === 1 &&
     alerts[0].severity === "GREEN";
 
+  const redCount = alerts?.filter((a) => a.severity === "RED").length ?? 0;
+  const amberCount = alerts?.filter((a) => a.severity === "AMBER").length ?? 0;
+
   return (
-    <div className="space-y-2">
-      <SectionHeader
-        title="Active Alerts"
-        subtitle={
-          isLoading
-            ? "Checking systems…"
-            : healthyOnly
-            ? "No issues detected"
-            : `${alerts?.filter((a) => a.severity === "RED").length ?? 0} critical · ${alerts?.filter((a) => a.severity === "AMBER").length ?? 0} warning`
-        }
-      />
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Active Alerts</p>
+        <p className="text-[12px] text-muted-foreground">
+          {isLoading ? "Checking systems…" : healthyOnly ? "No issues detected" : `${redCount} critical · ${amberCount} warning`}
+        </p>
+      </div>
 
       <div className="space-y-1.5">
         {isLoading ? (

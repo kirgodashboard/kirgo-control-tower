@@ -4,11 +4,12 @@ import { useState } from "react";
 import { FinanceKpiRow } from "@/features/finance/kpi-row";
 import { GatewaySettlementsTable } from "@/features/finance/gateway-settlements-table";
 import { CashFlowAreaChart } from "@/components/charts/cashflow-area-chart";
+import { PageHeader, PeriodTabs, SectionLabel } from "@/components/ui/page-header";
 import { useCashFlowDaily } from "@/lib/hooks/use-finance";
 import { getPeriodDates, getMtdRange } from "@/lib/utils/date-ranges";
 import type { Period } from "@/types/chart";
 
-const PERIODS: { key: Period | "mtd"; label: string }[] = [
+const PERIODS = [
   { key: "mtd", label: "MTD" },
   { key: "30d", label: "30 Days" },
   { key: "90d", label: "90 Days" },
@@ -25,10 +26,10 @@ function CashFlowPanel({ start }: { start: string }) {
   }));
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-4">Cash Flow</p>
+    <div className="rounded-xl border border-border bg-card p-5">
+      <SectionLabel title="Cash Flow" description="Daily inflow vs outflow" className="mb-4" />
       {isLoading ? (
-        <div className="h-52 bg-muted animate-pulse rounded" />
+        <div className="h-52 rounded-lg skeleton" />
       ) : (
         <CashFlowAreaChart data={chartData} height={208} />
       )}
@@ -41,28 +42,10 @@ export default function FinancePage() {
   const range = period === "mtd" ? getMtdRange() : getPeriodDates(period as Period);
 
   return (
-    <div className="p-5 space-y-5">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Finance & Cash</h1>
-          <p className="text-xs text-muted-foreground">{range.label}</p>
-        </div>
-        <div className="flex gap-1 bg-accent/40 rounded-lg p-1">
-          {PERIODS.map((p) => (
-            <button
-              key={p.key}
-              onClick={() => setPeriod(p.key)}
-              className={`px-3 py-1.5 text-xs rounded-md font-medium transition-colors ${
-                period === p.key
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="min-h-full p-6 space-y-6">
+      <PageHeader title="Finance & Cash" subtitle={range.label}>
+        <PeriodTabs value={period} options={PERIODS} onChange={(k) => setPeriod(k as Period | "mtd")} />
+      </PageHeader>
 
       <FinanceKpiRow start={range.start} end={range.end} />
 
@@ -75,3 +58,4 @@ export default function FinancePage() {
     </div>
   );
 }
+

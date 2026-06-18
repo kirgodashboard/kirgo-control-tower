@@ -27,7 +27,7 @@ export function GatewaySettlementsTable() {
   const rows = Object.values(byGateway).sort((a, b) => b.amount_inr - a.amount_inr);
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <div className="rounded-xl border border-border bg-card p-5">
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-4">
         Gateway Settlements
       </p>
@@ -46,7 +46,7 @@ export function GatewaySettlementsTable() {
                 <tr key={i} className="border-b border-border/50">
                   {Array.from({ length: 3 }).map((_, j) => (
                     <td key={j} className="py-3 pr-4">
-                      <div className="h-3 rounded bg-muted animate-pulse" style={{ width: "80px" }} />
+                      <div className="h-3 rounded skeleton" style={{ width: "80px" }} />
                     </td>
                   ))}
                 </tr>

@@ -11,22 +11,28 @@ export function TopBar() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4 flex-shrink-0">
+    <header className={cn(
+      "h-14 flex-shrink-0 flex items-center justify-between px-5",
+      "border-b border-border bg-background/95 backdrop-blur-sm"
+    )}>
+      {/* Left: spacer for page title (rendered inline in each page) */}
       <div />
+
+      {/* Right: actions */}
       <div className="flex items-center gap-2">
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className={cn(
-            "p-2 rounded-md text-muted-foreground hover:text-foreground",
-            "hover:bg-accent transition-colors"
+            "h-8 w-8 flex items-center justify-center rounded-md",
+            "text-muted-foreground hover:text-foreground hover:bg-accent",
+            "transition-colors"
           )}
           aria-label="Toggle theme"
         >
-          {mounted && theme === "dark" ? (
-            <Sun className="h-4 w-4" />
-          ) : (
-            <Moon className="h-4 w-4" />
-          )}
+          {mounted && theme === "dark"
+            ? <Sun className="h-[15px] w-[15px]" />
+            : <Moon className="h-[15px] w-[15px]" />
+          }
         </button>
       </div>
     </header>

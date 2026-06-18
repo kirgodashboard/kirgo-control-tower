@@ -4,58 +4,68 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    /* Light mode — clean whites inspired by Stripe/Linear */
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 222 47% 11%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 220 14% 94%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 222 47% 11%;
     --radius: 0.5rem;
-    --sidebar: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar: 220 14% 97%;
+    --sidebar-foreground: 220 9% 46%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent: 220 14% 94%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    /* Alert semantic */
+    --alert-red: 0 84% 60%;
+    --alert-amber: 38 92% 50%;
+    --alert-green: 142 71% 45%;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    /* Dark mode — Linear/Vercel quality deep zinc */
+    --background: 240 6% 7%;         /* #101012 — deeper than before */
+    --foreground: 0 0% 95%;
+    --card: 240 5% 10%;              /* #18181c — card surface */
+    --card-foreground: 0 0% 95%;
+    --popover: 240 5% 12%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 258 90% 66%;          /* violet-500 — brand accent */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 14%;
+    --secondary-foreground: 0 0% 85%;
+    --muted: 240 5% 14%;
+    --muted-foreground: 240 5% 55%;  /* slightly lighter for readability */
+    --accent: 240 5% 16%;
+    --accent-foreground: 0 0% 90%;
+    --destructive: 0 63% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --sidebar: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --border: 240 4% 18%;            /* subtle, not distracting */
+    --input: 240 5% 16%;
+    --ring: 258 90% 66%;
+    --sidebar: 240 7% 6%;            /* sidebar slightly darker */
+    --sidebar-foreground: 240 5% 55%;
+    --sidebar-border: 240 4% 13%;
+    --sidebar-accent: 240 5% 14%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    /* Alert semantic */
+    --alert-red: 0 63% 50%;
+    --alert-amber: 38 92% 50%;
+    --alert-green: 142 71% 45%;
   }
 }
 
@@ -63,26 +73,80 @@
   * {
     @apply border-border;
   }
+
+  html, body {
+    height: 100%;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Custom scrollbar — thin, subtle */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .text-balance { text-wrap: balance; }
+  .tabular-nums { font-variant-numeric: tabular-nums; }
+
+  /* Shimmer animation for skeleton loading */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--accent)) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
   }
-  .tabular-nums {
-    font-variant-numeric: tabular-nums;
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Pulse glow for status indicators */
+  .status-pulse-red {
+    animation: pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes pulse-red {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 hsl(var(--alert-red) / 0.4); }
+    50% { opacity: 0.8; box-shadow: 0 0 0 6px hsl(var(--alert-red) / 0); }
+  }
+
+  .status-pulse-amber {
+    animation: pulse-amber 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes pulse-amber {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 hsl(var(--alert-amber) / 0.4); }
+    50% { opacity: 0.8; box-shadow: 0 0 0 6px hsl(var(--alert-amber) / 0); }
+  }
+
+  /* Card hover elevation */
+  .card-hover {
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .card-hover:hover {
+    border-color: hsl(var(--border) / 0.8);
+    box-shadow: 0 4px 24px -4px hsl(0 0% 0% / 0.3);
   }
 }
 
-/* Director Command Center — dark canvas overrides */
-.director-canvas {
-  background: #09090b; /* zinc-950 */
+/* Director Command Center canvas */
+.dark .director-canvas {
+  background: hsl(var(--background));
 }
-.director-card {
-  background: #18181b; /* zinc-900 */
-  border: 1px solid #27272a; /* zinc-800 */
+.director-canvas {
+  background: hsl(var(--background));
 }
