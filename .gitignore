@@ -23,3 +23,6 @@ imports/archive/*
 .env
 .env.local
 .env.production
+
+# Local backups
+backups/
