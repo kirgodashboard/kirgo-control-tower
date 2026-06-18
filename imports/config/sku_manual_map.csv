@@ -1,1 +1,15 @@
 raw_sku,canonical_sku,notes
+BCSS01,CL1-BRA-S,Alternate WC raw SKU for Classic Sports Bra S (primary: BCSBS01)
+BCSM01,CL1-BRA-M,Alternate WC raw SKU for Classic Sports Bra M (primary: BCSBM01)
+BCSL01,CL1-BRA-L,Alternate WC raw SKU for Classic Sports Bra L (primary: BCSBL01)
+SLP-M,COR-LEG-M,Older WC naming for Core Leggings M (primary channel SKU: SLP-M-1)
+SLP-S,COR-LEG-S,Older WC naming for Core Leggings S (primary channel SKU: SLP-S-1)
+SLP-L,COR-LEG-L,Older WC naming for Core Leggings L (primary channel SKU: SLP-L-1)
+SLP-XL,COR-LEG-XL,Older WC naming for Core Leggings XL (primary channel SKU: SLP-XL-1)
+SBP-M,COR-BRA-M,Older WC naming for Core Sports Bra M (primary channel SKU: SBP-M-1)
+SBP-S,COR-BRA-S,Older WC naming for Core Sports Bra S (primary channel SKU: SBP-S-1)
+SBP-L,COR-BRA-L,Older WC naming for Core Sports Bra L (primary channel SKU: SBP-L-1)
+SBLP-M,COR-SET-M,Older WC naming for Core Set M (primary channel SKU: SBLP-M-1)
+SBLP-S,COR-SET-S,Older WC naming for Core Set S (primary channel SKU: SBLP-S-1)
+SBLP-L,COR-SET-L,Older WC naming for Core Set L (primary channel SKU: SBLP-L-1)
+SBLP-XL,COR-SET-XL,Older WC naming for Core Set XL
