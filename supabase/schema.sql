@@ -628,7 +628,7 @@ CREATE TABLE gateway_settlements (
 
   CONSTRAINT gateway_settlements_pkey          PRIMARY KEY (id),
   CONSTRAINT gateway_settlements_ref_key       UNIQUE      (settlement_reference),
-  CONSTRAINT gateway_settlements_gateway_chk   CHECK (gateway IN ('easebuzz','infibeam','shiprocket_cod')),
+  CONSTRAINT gateway_settlements_gateway_chk   CHECK (gateway IN ('easebuzz','infibeam','shiprocket_cod','gokwik')),
   CONSTRAINT gateway_settlements_amount_pos    CHECK (amount_inr > 0)
 );
 
