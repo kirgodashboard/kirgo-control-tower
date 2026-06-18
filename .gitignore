@@ -26,3 +26,4 @@ imports/archive/*
 
 # Local backups
 backups/
+.vercel
