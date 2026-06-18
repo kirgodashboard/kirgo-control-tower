@@ -12,6 +12,7 @@ Data quality issues handled here:
 """
 from __future__ import annotations
 
+import datetime
 import logging
 import re
 from pathlib import Path
@@ -118,6 +119,9 @@ RTO_RISK_MAP: dict[str, str] = {
 
 # Go artefact produced by Shiprocket's Go-based data pipeline
 _GO_ARTEFACT_RE = re.compile(r"^%!f\(string=(.*)\)$")
+
+# Excel encodes blank date cells as serial 0 → 1900-01-01; reject anything before this
+_MIN_VALID_DATE = datetime.date(2000, 1, 1)
 
 
 # ── Importer class ────────────────────────────────────────────────────────────
@@ -313,7 +317,7 @@ class ShiprocketShipmentsImporter:
                 courier=clean_str(raw.get(SR_COURIER)),
                 zone=zone,
                 freight=_parse_go_decimal(raw.get(SR_FREIGHT)),
-                cod_charges=_parse_go_decimal(raw.get(SR_COD_CHARGES)),
+                cod_charges=_parse_go_decimal(raw.get(SR_COD_CHARGES)) or 0.0,
                 cod_crf_id=clean_str(raw.get(SR_CRF_ID)),
                 cod_remittance_date=_parse_date_only(raw.get(SR_COD_REM_DATE)),
                 cod_payable=parse_decimal(raw.get(SR_COD_PAYABLE)),
@@ -538,26 +542,30 @@ def _parse_sr_datetime(value: str | None):
     """
     Parse SR datetime string (IST, format 'YYYY-MM-DD HH:MM:SS').
     Returns UTC datetime or None.
-    'N/A' and blank strings both return None.
+    'N/A', blank strings, and Excel epoch placeholder (1900-01-01) all return None.
     """
     if not value:
         return None
     s = str(value).strip()
     if s.upper() in ("N/A", "NA", ""):
         return None
-    return parse_ist_to_utc(s)
+    result = parse_ist_to_utc(s)
+    if result is not None and result.date() < _MIN_VALID_DATE:
+        return None
+    return result
 
 
 def _parse_date_only(value: str | None):
-    """Parse a date-only value. Returns a date object or None."""
+    """Parse a date-only value. Returns a date object or None.
+    Excel epoch placeholder (1900-01-01) returns None."""
     if not value:
         return None
     s = str(value).strip()
     if s.upper() in ("N/A", "NA", ""):
         return None
-    # Accept 'YYYY-MM-DD' or via dateutil
     from dateutil import parser as dp
     try:
-        return dp.parse(s).date()
+        d = dp.parse(s).date()
+        return d if d >= _MIN_VALID_DATE else None
     except Exception:
         return None
