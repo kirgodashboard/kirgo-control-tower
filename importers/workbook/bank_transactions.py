@@ -254,6 +254,13 @@ class BankTransactionsImporter:
             withdrawal = _parse_amount(raw.get(BK_WITHDRAWAL))
             deposit    = _parse_amount(raw.get(BK_DEPOSIT))
 
+            # HDFC exports some debit-card standing instructions (ME DC SI) with
+            # a negative sign in the Withdrawal column. Normalise to absolute value.
+            if withdrawal is not None and withdrawal < 0:
+                withdrawal = abs(withdrawal)
+            if deposit is not None and deposit < 0:
+                deposit = abs(deposit)
+
             if withdrawal is None and deposit is None:
                 log_import_error(
                     conn, self._run_id, row_num, raw,
