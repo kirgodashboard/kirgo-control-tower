@@ -18,8 +18,8 @@ export function AlertPanel() {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Active Alerts</p>
-        <p className="text-[12px] text-muted-foreground">
+        <p className="text-[18px] font-semibold text-foreground">Active Alerts</p>
+        <p className="text-[13px] text-muted-foreground">
           {isLoading ? "Checking systems…" : healthyOnly ? "No issues detected" : `${redCount} critical · ${amberCount} warning`}
         </p>
       </div>

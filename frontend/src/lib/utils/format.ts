@@ -1,11 +1,19 @@
 export function formatINR(value: number | null | undefined, compact = true): string {
   if (value == null) return "—";
   if (compact) {
-    if (Math.abs(value) >= 10_00_000) {
-      return `₹${(value / 10_00_000).toFixed(1)}L`;
+    const abs = Math.abs(value);
+    const sign = value < 0 ? "-" : "";
+    if (abs >= 1_00_00_000) {
+      const str = (abs / 1_00_00_000).toFixed(2).replace(/\.?0+$/, "");
+      return `${sign}₹${str}Cr`;
     }
-    if (Math.abs(value) >= 1_000) {
-      return `₹${(value / 1_000).toFixed(1)}K`;
+    if (abs >= 1_00_000) {
+      const str = (abs / 1_00_000).toFixed(2).replace(/\.?0+$/, "");
+      return `${sign}₹${str}L`;
+    }
+    if (abs >= 1_000) {
+      const str = (abs / 1_000).toFixed(1).replace(/\.?0+$/, "");
+      return `${sign}₹${str}K`;
     }
   }
   return `₹${value.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;

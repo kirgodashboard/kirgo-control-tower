@@ -9,11 +9,11 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, children, className }: PageHeaderProps) {
   return (
-    <div className={cn("flex items-center justify-between flex-wrap gap-3 pb-1", className)}>
+    <div className={cn("flex items-center justify-between flex-wrap gap-3 pb-2", className)}>
       <div>
-        <h1 className="text-[17px] font-bold text-foreground tracking-tight leading-snug">{title}</h1>
+        <h1 className="text-[28px] sm:text-[32px] font-bold text-foreground tracking-tight leading-tight">{title}</h1>
         {subtitle && (
-          <p className="text-[12px] text-muted-foreground mt-0.5">{subtitle}</p>
+          <p className="text-[14px] text-muted-foreground mt-1">{subtitle}</p>
         )}
       </div>
       {children}
@@ -57,11 +57,11 @@ interface SectionLabelProps {
 export function SectionLabel({ title, description, className }: SectionLabelProps) {
   return (
     <div className={cn("mb-3", className)}>
-      <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+      <p className="text-[18px] font-semibold text-foreground">
         {title}
       </p>
       {description && (
-        <p className="text-[12px] text-muted-foreground mt-0.5">{description}</p>
+        <p className="text-[13px] text-muted-foreground mt-0.5">{description}</p>
       )}
     </div>
   );

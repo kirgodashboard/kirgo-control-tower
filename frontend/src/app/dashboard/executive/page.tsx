@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { ExecKpiRow } from "@/features/executive/kpi-row";
-import { RevenueTrendPanel } from "@/features/executive/revenue-trend-panel";
 import { PaymentSplitDonut } from "@/features/executive/payment-split-donut";
 import { LaunchTable } from "@/features/executive/launch-table";
 import { PageHeader, PeriodTabs } from "@/components/ui/page-header";
@@ -32,12 +31,10 @@ export default function ExecutivePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
-          <RevenueTrendPanel />
+          <LaunchTable />
         </div>
         <PaymentSplitDonut start={range.start} end={range.end} />
       </div>
-
-      <LaunchTable />
     </div>
   );
 }

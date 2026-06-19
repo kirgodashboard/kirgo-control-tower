@@ -1,25 +1,34 @@
 import { DirectorKpiRow } from "@/features/director/kpi-row";
 import { DirectorTrendRow } from "@/features/director/trend-row";
 import { AlertPanel } from "@/features/director/alert-panel";
+import { BusinessSummary } from "@/features/director/business-summary";
 
 export const metadata = { title: "Command Center · Kirgo" };
 
 export default function DirectorCommandCenterPage() {
   return (
-    <div className="min-h-full p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[17px] font-bold text-foreground tracking-tight">Command Center</h1>
-          <p className="text-[12px] text-muted-foreground mt-0.5">
-            Business health snapshot · auto-refreshes every 2 min
-          </p>
-        </div>
+    <div className="min-h-full p-5 sm:p-6 space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-[28px] sm:text-[34px] font-bold text-foreground tracking-tight leading-tight">
+          Command Center
+        </h1>
+        <p className="text-[14px] text-muted-foreground mt-1">
+          Business health snapshot · auto-refreshes every 2 min
+        </p>
       </div>
 
+      {/* Business Summary — answers "how is the business doing?" */}
+      <BusinessSummary />
+
+      {/* KPI Grid */}
       <DirectorKpiRow />
+
+      {/* Trend charts */}
       <DirectorTrendRow />
 
-      <div className="rounded-xl border border-border bg-card p-5">
+      {/* Active Alerts */}
+      <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
         <AlertPanel />
       </div>
     </div>

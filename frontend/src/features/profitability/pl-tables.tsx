@@ -38,9 +38,9 @@ function TableSkeleton({ cols }: { cols: number }) {
   );
 }
 
-const th = "px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
-const td = "px-3 py-2.5 text-[13px] text-foreground";
-const tdNum = "px-3 py-2.5 text-[13px] text-foreground text-right tabular-nums";
+const th = "px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+const td = "px-3 py-4 text-[15px] text-foreground";
+const tdNum = "px-3 py-4 text-[15px] text-foreground text-right tabular-nums font-medium";
 
 // ── Product P&L ───────────────────────────────────────────────────────────────
 
