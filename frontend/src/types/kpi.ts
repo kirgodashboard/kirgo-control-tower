@@ -90,3 +90,75 @@ export interface LaunchPerformance {
   orders_count: number;
   aov_inr: number;
 }
+
+// ── Profitability ────────────────────────────────────────────────────────────
+
+export interface ProfitabilityKpis {
+  revenue_inr: number;
+  cogs_inr: number;
+  gross_profit_inr: number;
+  gross_margin_pct: number;
+  shipping_cost_inr: number;
+  cod_charges_inr: number;
+  ad_spend_inr: number;
+  contribution_margin_inr: number;
+  contribution_margin_pct: number;
+}
+
+export interface ProductPl {
+  product_name: string;
+  launch_code: string;
+  product_type: string;
+  orders_count: number;
+  units_sold: number;
+  revenue_inr: number;
+  cogs_inr: number;
+  gross_profit_inr: number;
+  gross_margin_pct: number;
+}
+
+export interface SkuPl {
+  sku: string;
+  product_name: string;
+  launch_code: string;
+  size: string | null;
+  orders_count: number;
+  units_sold: number;
+  revenue_inr: number;
+  cogs_inr: number;
+  gross_profit_inr: number;
+  gross_margin_pct: number;
+}
+
+export interface CityPl {
+  city: string;
+  orders_count: number;
+  units_sold: number;
+  revenue_inr: number;
+  cogs_inr: number;
+  gross_profit_inr: number;
+  gross_margin_pct: number;
+}
+
+export interface LaunchPl {
+  launch_code: string;
+  launch_name: string;
+  launched_at: string | null;
+  total_investment_inr: number | null;
+  revenue_inr: number;
+  cogs_inr: number;
+  gross_profit_inr: number;
+  gross_margin_pct: number;
+  orders_count: number;
+  units_sold: number;
+}
+
+export interface CustomerPl {
+  customer_ref: string;
+  orders_count: number;
+  units_sold: number;
+  revenue_inr: number;
+  cogs_inr: number;
+  gross_profit_inr: number;
+  gross_margin_pct: number;
+}
