@@ -9,6 +9,7 @@ import {
   Users,
   Package,
   Landmark,
+  ChartNoAxesCombined,
   ChevronRight,
 } from "lucide-react";
 
@@ -43,6 +44,12 @@ const navItems = [
     label: "Finance",
     icon: Landmark,
     description: "Cash & settlements",
+  },
+  {
+    href: "/dashboard/profitability",
+    label: "Profitability",
+    icon: ChartNoAxesCombined,
+    description: "Margins & P&L",
   },
 ];
 
