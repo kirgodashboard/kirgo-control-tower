@@ -311,25 +311,28 @@ AS $$
   run_agg AS (
     SELECT
       sr.integration_key,
-      -- last success
-      MAX(sr.completed_at) FILTER (WHERE sr.status = 'success')   AS last_success_at,
-      SUM(sr.records_inserted) FILTER (WHERE sr.status = 'success'
-        AND sr.completed_at = MAX(sr.completed_at) FILTER (WHERE sr.status = 'success'))
-                                                                   AS last_success_inserted,
-      SUM(sr.records_updated)  FILTER (WHERE sr.status = 'success'
-        AND sr.completed_at = MAX(sr.completed_at) FILTER (WHERE sr.status = 'success'))
-                                                                   AS last_success_updated,
-      -- last failure
-      MAX(sr.completed_at) FILTER (WHERE sr.status = 'failed')    AS last_failure_at,
+      -- last success / failure timestamps
+      MAX(sr.completed_at) FILTER (WHERE sr.status = 'success') AS last_success_at,
+      MAX(sr.completed_at) FILTER (WHERE sr.status = 'failed')  AS last_failure_at,
       -- lifetime totals
-      COALESCE(SUM(sr.records_inserted), 0)  AS total_inserted,
-      COALESCE(SUM(sr.records_updated),  0)  AS total_updated,
-      COALESCE(SUM(sr.records_failed),   0)  AS total_failed,
+      COALESCE(SUM(sr.records_inserted), 0) AS total_inserted,
+      COALESCE(SUM(sr.records_updated),  0) AS total_updated,
+      COALESCE(SUM(sr.records_failed),   0) AS total_failed,
       ROUND(
         AVG(sr.duration_secs) FILTER (WHERE sr.completed_at IS NOT NULL)::numeric, 1
-      )                                                            AS avg_duration_secs
+      )                                                          AS avg_duration_secs
     FROM sync_runs sr
     GROUP BY sr.integration_key
+  ),
+  -- records from the single most-recent successful run (can't nest aggregates in FILTER)
+  last_success AS (
+    SELECT DISTINCT ON (integration_key)
+      integration_key,
+      records_inserted AS last_success_inserted,
+      records_updated  AS last_success_updated
+    FROM  sync_runs
+    WHERE status = 'success'
+    ORDER BY integration_key, completed_at DESC
   ),
   last_failure AS (
     SELECT DISTINCT ON (integration_key)
@@ -356,26 +359,27 @@ AS $$
     i.is_enabled,
     i.connection_status,
     i.last_tested_at,
-    COALESCE(jc.active_jobs, 0)           AS active_job_count,
+    COALESCE(jc.active_jobs, 0)            AS active_job_count,
     ra.last_success_at,
-    COALESCE(ra.last_success_inserted, 0) AS last_success_inserted,
-    COALESCE(ra.last_success_updated,  0) AS last_success_updated,
+    COALESCE(ls.last_success_inserted, 0)  AS last_success_inserted,
+    COALESCE(ls.last_success_updated,  0)  AS last_success_updated,
     ra.last_failure_at,
-    lf.error_summary                      AS last_failure_error,
-    COALESCE(ra.total_inserted, 0)        AS total_records_inserted,
-    COALESCE(ra.total_updated,  0)        AS total_records_updated,
-    COALESCE(ra.total_failed,   0)        AS total_records_failed,
+    lf.error_summary                       AS last_failure_error,
+    COALESCE(ra.total_inserted, 0)         AS total_records_inserted,
+    COALESCE(ra.total_updated,  0)         AS total_records_updated,
+    COALESCE(ra.total_failed,   0)         AS total_records_failed,
     ra.avg_duration_secs,
     lr.latest_run_id,
     lr.latest_run_status,
     lr.latest_run_started,
     lr.latest_run_entity,
-    (lr.latest_run_status = 'running')    AS latest_is_running
+    (lr.latest_run_status = 'running')     AS latest_is_running
   FROM  integration_settings i
-  LEFT  JOIN job_counts jc ON jc.integration_key = i.integration_key
-  LEFT  JOIN run_agg    ra ON ra.integration_key = i.integration_key
+  LEFT  JOIN job_counts   jc ON jc.integration_key = i.integration_key
+  LEFT  JOIN run_agg      ra ON ra.integration_key = i.integration_key
+  LEFT  JOIN last_success ls ON ls.integration_key = i.integration_key
   LEFT  JOIN last_failure lf ON lf.integration_key = i.integration_key
-  LEFT  JOIN latest_run  lr ON lr.integration_key = i.integration_key
+  LEFT  JOIN latest_run   lr ON lr.integration_key = i.integration_key
   ORDER BY i.id;
 $$;
 
