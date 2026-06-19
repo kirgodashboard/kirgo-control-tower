@@ -14,6 +14,7 @@ import {
   Receipt,
   FilePlus,
   CreditCard,
+  Plug,
   X,
 } from "lucide-react";
 
@@ -35,6 +36,12 @@ const navGroups = [
       { href: "/dashboard/expenses",           label: "Expense Master",     icon: Receipt,    description: "Expense ledger & analytics" },
       { href: "/dashboard/expense-entry",      label: "New Expense",        icon: FilePlus,   description: "Manual expense entry" },
       { href: "/dashboard/bank-classification",label: "Bank Classification",icon: CreditCard, description: "Classify bank transactions" },
+    ],
+  },
+  {
+    label: "Data",
+    items: [
+      { href: "/dashboard/integrations", label: "Integrations", icon: Plug, description: "API sync status & controls" },
     ],
   },
 ];
