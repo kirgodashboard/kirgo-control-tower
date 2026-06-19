@@ -103,6 +103,15 @@ export interface ProfitabilityKpis {
   ad_spend_inr: number;
   contribution_margin_inr: number;
   contribution_margin_pct: number;
+  return_cost_inr: number;
+}
+
+export interface ProfitabilityTrendPoint {
+  period: string;
+  revenue_inr: number;
+  cogs_inr: number;
+  gross_profit_inr: number;
+  gross_margin_pct: number;
 }
 
 export interface ProductPl {

@@ -10,14 +10,22 @@ import {
   LaunchPlTable,
   CustomerPlTable,
 } from "@/features/profitability/pl-tables";
+import {
+  RevenueCostChart,
+  MarginTrendChart,
+  TopProfitProductsChart,
+  LowestMarginProductsChart,
+} from "@/features/profitability/profitability-charts";
+import { useProfitabilityKpis } from "@/lib/hooks/use-profitability";
+import { formatINR, formatPct } from "@/lib/utils/format";
 
 type Period = "30d" | "90d" | "6m" | "all";
 
 const PERIODS = [
-  { key: "30d",  label: "30 Days" },
-  { key: "90d",  label: "90 Days" },
-  { key: "6m",   label: "6 Months" },
-  { key: "all",  label: "All Time" },
+  { key: "30d", label: "30 Days" },
+  { key: "90d", label: "90 Days" },
+  { key: "6m",  label: "6 Months" },
+  { key: "all", label: "All Time" },
 ];
 
 type PlTab = "product" | "sku" | "city" | "launch" | "customer";
@@ -46,7 +54,7 @@ function periodDates(period: Period): { start: string; end: string; label: strin
 }
 
 export default function ProfitabilityPage() {
-  const [period, setPeriod] = useState<Period>("30d");
+  const [period, setPeriod] = useState<Period>("all");
   const [plTab, setPlTab] = useState<PlTab>("product");
   const { start, end, label } = periodDates(period);
 
@@ -60,16 +68,42 @@ export default function ProfitabilityPage() {
         />
       </PageHeader>
 
-      {/* KPI Row */}
-      {period !== "all" && <ProfitabilityKpiRow start={start} end={end} />}
-      {period === "all" && <ProfitabilityKpiRow start={start} end={end} />}
+      {/* 6 KPI cards */}
+      <ProfitabilityKpiRow start={start} end={end} />
 
-      {/* Waterfall summary */}
+      {/* P&L Waterfall */}
       <ProfitabilityWaterfall start={start} end={end} />
+
+      {/* Charts — row 1: Revenue vs Cost · Margin Trend */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="rounded-xl border border-border bg-card p-5">
+          <p className="text-[17px] font-semibold text-foreground mb-1">Revenue vs COGS</p>
+          <p className="text-[12px] text-muted-foreground mb-4">Delivered revenue against landed cost per period</p>
+          <RevenueCostChart start={start} end={end} />
+        </div>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <p className="text-[17px] font-semibold text-foreground mb-1">Gross Margin Trend</p>
+          <p className="text-[12px] text-muted-foreground mb-4">Margin % over time · green line = 35% target</p>
+          <MarginTrendChart start={start} end={end} />
+        </div>
+      </div>
+
+      {/* Charts — row 2: Top profit · Lowest margin */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="rounded-xl border border-border bg-card p-5">
+          <p className="text-[17px] font-semibold text-foreground mb-1">Top Products by Gross Profit</p>
+          <p className="text-[12px] text-muted-foreground mb-4">Best performing products for this period</p>
+          <TopProfitProductsChart start={start} end={end} />
+        </div>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <p className="text-[17px] font-semibold text-foreground mb-1">Lowest Margin Products</p>
+          <p className="text-[12px] text-muted-foreground mb-4">Watch these · green dashed = 35% target</p>
+          <LowestMarginProductsChart start={start} end={end} />
+        </div>
+      </div>
 
       {/* P&L Tables */}
       <div className="rounded-xl border border-border bg-card">
-        {/* Tab bar */}
         <div className="flex items-center gap-1 p-4 border-b border-border">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mr-4">
             P&amp;L Breakdown
@@ -88,7 +122,6 @@ export default function ProfitabilityPage() {
             </button>
           ))}
         </div>
-
         <div className="p-4">
           {plTab === "product"  && <ProductPlTable  start={start} end={end} />}
           {plTab === "sku"      && <SkuPlTable       start={start} end={end} />}
@@ -101,10 +134,7 @@ export default function ProfitabilityPage() {
   );
 }
 
-// ── Waterfall card ─────────────────────────────────────────────────────────────
-
-import { useProfitabilityKpis } from "@/lib/hooks/use-profitability";
-import { formatINR, formatPct } from "@/lib/utils/format";
+// ── Waterfall ──────────────────────────────────────────────────────────────────
 
 function WaterfallRow({
   label,
@@ -162,9 +192,7 @@ function WaterfallRow({
 function ProfitabilityWaterfall({ start, end }: { start: string; end: string }) {
   const { data: kpis, isLoading } = useProfitabilityKpis(start, end);
 
-  if (isLoading) {
-    return <div className="h-52 rounded-xl skeleton" />;
-  }
+  if (isLoading) return <div className="h-52 rounded-xl skeleton" />;
   if (!kpis) return null;
 
   const revPct = (v: number) => (kpis.revenue_inr > 0 ? (v / kpis.revenue_inr) * 100 : 0);
@@ -172,19 +200,18 @@ function ProfitabilityWaterfall({ start, end }: { start: string; end: string }) 
   return (
     <div className="rounded-xl border border-border bg-card">
       <div className="px-4 pt-4 pb-2">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-          P&amp;L Waterfall
-        </p>
+        <p className="text-[17px] font-semibold text-foreground">P&amp;L Waterfall</p>
         <p className="text-[12px] text-muted-foreground/70 mt-0.5">
           Revenue → Gross Profit → Contribution Margin
         </p>
       </div>
       <WaterfallRow label="Gross Revenue"        value={kpis.revenue_inr}              pct={100} />
-      <WaterfallRow label="COGS (Landed Cost)"   value={kpis.cogs_inr}                 pct={revPct(kpis.cogs_inr)}         isMinus />
-      <WaterfallRow label="Gross Profit"         value={kpis.gross_profit_inr}          pct={kpis.gross_margin_pct}         isTotal />
+      <WaterfallRow label="COGS (Landed Cost)"   value={kpis.cogs_inr}                 pct={revPct(kpis.cogs_inr)}          isMinus />
+      <WaterfallRow label="Gross Profit"         value={kpis.gross_profit_inr}          pct={kpis.gross_margin_pct}          isTotal />
       <WaterfallRow label="Outbound Shipping"    value={kpis.shipping_cost_inr}         pct={revPct(kpis.shipping_cost_inr)} isMinus />
       <WaterfallRow label="COD Charges"          value={kpis.cod_charges_inr}           pct={revPct(kpis.cod_charges_inr)}  isMinus />
       <WaterfallRow label="Ad Spend"             value={kpis.ad_spend_inr}              pct={revPct(kpis.ad_spend_inr)}     isMinus />
+      <WaterfallRow label="Return Cost Impact"   value={kpis.return_cost_inr}           pct={revPct(kpis.return_cost_inr)}  isMinus />
       <WaterfallRow
         label="Contribution Margin"
         value={kpis.contribution_margin_inr}

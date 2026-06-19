@@ -28,6 +28,12 @@ const navItems = [
     description: "Revenue & growth",
   },
   {
+    href: "/dashboard/profitability",
+    label: "Profitability",
+    icon: ChartNoAxesCombined,
+    description: "Margins & P&L",
+  },
+  {
     href: "/dashboard/customers",
     label: "Customers",
     icon: Users,
@@ -44,12 +50,6 @@ const navItems = [
     label: "Finance",
     icon: Landmark,
     description: "Cash & settlements",
-  },
-  {
-    href: "/dashboard/profitability",
-    label: "Profitability",
-    icon: ChartNoAxesCombined,
-    description: "Margins & P&L",
   },
 ];
 

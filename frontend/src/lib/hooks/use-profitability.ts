@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchProfitabilityKpis,
+  fetchProfitabilityTrend,
   fetchProductPl,
   fetchSkuPl,
   fetchCityPl,
@@ -14,6 +15,14 @@ export function useProfitabilityKpis(start: string, end: string) {
   return useQuery({
     queryKey: ["profitability-kpis", start, end],
     queryFn: () => fetchProfitabilityKpis(start, end),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useProfitabilityTrend(start: string, end: string) {
+  return useQuery({
+    queryKey: ["profitability-trend", start, end],
+    queryFn: () => fetchProfitabilityTrend(start, end),
     staleTime: 5 * 60 * 1000,
   });
 }

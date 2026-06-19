@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase/client";
 import type {
   ProfitabilityKpis,
+  ProfitabilityTrendPoint,
   ProductPl,
   SkuPl,
   CityPl,
@@ -60,6 +61,18 @@ export async function fetchLaunchPl(): Promise<LaunchPl[]> {
   const { data, error } = await supabase.rpc("get_launch_pl");
   if (error) throw error;
   return (data ?? []) as LaunchPl[];
+}
+
+export async function fetchProfitabilityTrend(
+  start: string,
+  end: string,
+): Promise<ProfitabilityTrendPoint[]> {
+  const { data, error } = await supabase.rpc("get_profitability_trend", {
+    p_start: start,
+    p_end: end,
+  });
+  if (error) throw error;
+  return (data ?? []) as ProfitabilityTrendPoint[];
 }
 
 export async function fetchCustomerPl(
