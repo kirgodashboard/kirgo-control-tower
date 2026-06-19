@@ -13,6 +13,7 @@ const PERIODS = [
   { key: "30d", label: "30 Days" },
   { key: "90d", label: "90 Days" },
   { key: "6m", label: "6 Months" },
+  { key: "all", label: "All Time" },
 ];
 
 export default function CustomersPage() {
