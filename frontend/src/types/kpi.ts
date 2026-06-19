@@ -171,3 +171,68 @@ export interface CustomerPl {
   gross_profit_inr: number;
   gross_margin_pct: number;
 }
+
+// ── Expense Intelligence ──────────────────────────────────────────────────────
+
+export interface ExpenseKpis {
+  total_expense_inr: number;
+  monthly_run_rate_inr: number;
+  largest_head_name: string;
+  largest_head_amount_inr: number;
+  largest_vendor: string;
+  largest_vendor_amount_inr: number;
+  expense_growth_pct: number | null;
+  unclassified_count: number;
+}
+
+export interface ExpenseListItem {
+  id: number;
+  expense_date: string;
+  category_name: string;
+  category_id: number;
+  description: string;
+  amount_inr: number;
+  vendor: string | null;
+  payment_method: string | null;
+  notes: string | null;
+  status: string | null;
+  attachment_url: string | null;
+  bank_transaction_id: number | null;
+}
+
+export interface ExpenseByCategory {
+  category_name: string;
+  category_id: number;
+  total_inr: number;
+  transaction_count: number;
+  pct_of_total: number;
+}
+
+export interface ExpenseTrendPoint {
+  period: string;
+  total_inr: number;
+  transaction_count: number;
+}
+
+export interface ExpenseVendor {
+  vendor: string;
+  total_inr: number;
+  transaction_count: number;
+  last_expense_date: string;
+}
+
+export interface ExpenseCategory {
+  id: number;
+  code: string;
+  name: string;
+  category_group: string;
+}
+
+export interface UnclassifiedTransaction {
+  id: number;
+  transaction_date: string;
+  narration_raw: string;
+  withdrawal_inr: number;
+  closing_balance_inr: number | null;
+  counterparty: string | null;
+}

@@ -4,8 +4,8 @@
 
 @layer base {
   :root {
-    /* Light mode — clean whites inspired by Stripe/Linear */
-    --background: 0 0% 98%;
+    /* Light mode — slightly darker background for card contrast */
+    --background: 0 0% 92%;
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;

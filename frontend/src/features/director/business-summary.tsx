@@ -3,8 +3,9 @@
 import { cn } from "@/lib/utils";
 import { useDirectorSnapshot } from "@/lib/hooks/use-director-snapshot";
 import { useProductPl, useCityPl, useProfitabilityKpis } from "@/lib/hooks/use-profitability";
+import { useExpenseKpis } from "@/lib/hooks/use-expenses";
 import { formatINR } from "@/lib/utils/format";
-import type { DirectorSnapshot, ProfitabilityKpis, ProductPl, CityPl } from "@/types/kpi";
+import type { DirectorSnapshot, ProfitabilityKpis, ProductPl, CityPl, ExpenseKpis } from "@/types/kpi";
 
 const ALL_START = "2023-01-01";
 const ALL_END   = new Date().toISOString().slice(0, 10);
@@ -172,6 +173,37 @@ function InsightList({ insights }: { insights: Insight[] }) {
   );
 }
 
+// ── Finance insights ──────────────────────────────────────────────────────────
+
+function deriveFinanceInsights(expKpis: ExpenseKpis): Insight[] {
+  const out: Insight[] = [];
+
+  if (expKpis.unclassified_count > 0) {
+    out.push({
+      text: `${expKpis.unclassified_count} bank transaction${expKpis.unclassified_count > 1 ? "s" : ""} need classification — head to Bank Classification`,
+      level: expKpis.unclassified_count > 10 ? "red" : "amber",
+    });
+  } else {
+    out.push({ text: "All bank transactions classified — no pending items", level: "green" });
+  }
+
+  if (expKpis.monthly_run_rate_inr > 0) {
+    out.push({
+      text: `Monthly expense run rate: ${formatINR(expKpis.monthly_run_rate_inr)} — projected from current period`,
+      level: "amber",
+    });
+  }
+
+  if (expKpis.largest_head_name !== "N/A") {
+    out.push({
+      text: `Largest expense head: ${expKpis.largest_head_name} at ${formatINR(expKpis.largest_head_amount_inr)}`,
+      level: "amber",
+    });
+  }
+
+  return out;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function BusinessSummary() {
@@ -179,8 +211,9 @@ export function BusinessSummary() {
   const { data: products = [], isLoading: prodLoading } = useProductPl(ALL_START, ALL_END);
   const { data: cities   = [], isLoading: cityLoading } = useCityPl(ALL_START, ALL_END);
   const { data: profKpis, isLoading: kpiLoading }  = useProfitabilityKpis(ALL_START, ALL_END);
+  const { data: expKpis,  isLoading: expLoading }  = useExpenseKpis(ALL_START, ALL_END);
 
-  const isLoading = snapLoading || prodLoading || cityLoading || kpiLoading;
+  const isLoading = snapLoading || prodLoading || cityLoading || kpiLoading || expLoading;
 
   if (isLoading) {
     return (
@@ -199,10 +232,11 @@ export function BusinessSummary() {
 
   if (!snap) return null;
 
-  const insights     = deriveInsights(snap);
-  const profInsights = profKpis && products.length > 0 && cities.length > 0
+  const insights      = deriveInsights(snap);
+  const profInsights  = profKpis && products.length > 0 && cities.length > 0
     ? deriveProfitabilityInsights(profKpis, products, cities)
     : [];
+  const finInsights   = expKpis ? deriveFinanceInsights(expKpis) : [];
 
   const score = healthScore(snap);
   const { label: sLabel, color: sColor } = scoreLabel(score);
@@ -248,6 +282,16 @@ export function BusinessSummary() {
                 Profitability
               </p>
               <InsightList insights={profInsights} />
+            </div>
+          )}
+
+          {/* Finance */}
+          {finInsights.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-border/40">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2.5">
+                Finance
+              </p>
+              <InsightList insights={finInsights} />
             </div>
           )}
         </div>
