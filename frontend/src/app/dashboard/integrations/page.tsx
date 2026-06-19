@@ -377,15 +377,89 @@ function HealthBar({ integrations }: { integrations: IntegrationSummary[] }) {
   );
 }
 
+// ─── Static fallback — always visible even before migration is applied ────────
+
+const STATIC_INTEGRATIONS: IntegrationSummary[] = [
+  {
+    integration_key: "woocommerce",
+    display_name: "WooCommerce",
+    description: "Pull orders, products, and customers from the WooCommerce store REST API",
+    is_enabled: false, connection_status: "unconfigured", last_tested_at: null,
+    active_job_count: 3,
+    last_success_at: null, last_success_inserted: 0, last_success_updated: 0,
+    last_failure_at: null, last_failure_error: null,
+    total_records_inserted: 0, total_records_updated: 0, total_records_failed: 0,
+    avg_duration_secs: null,
+    latest_run_id: null, latest_run_status: null,
+    latest_run_started: null, latest_run_entity: null, latest_is_running: false,
+  },
+  {
+    integration_key: "shiprocket",
+    display_name: "Shiprocket",
+    description: "Sync shipment status, AWB tracking, COD remittances, and RTO events",
+    is_enabled: false, connection_status: "unconfigured", last_tested_at: null,
+    active_job_count: 2,
+    last_success_at: null, last_success_inserted: 0, last_success_updated: 0,
+    last_failure_at: null, last_failure_error: null,
+    total_records_inserted: 0, total_records_updated: 0, total_records_failed: 0,
+    avg_duration_secs: null,
+    latest_run_id: null, latest_run_status: null,
+    latest_run_started: null, latest_run_entity: null, latest_is_running: false,
+  },
+  {
+    integration_key: "razorpay",
+    display_name: "Razorpay",
+    description: "Sync prepaid payment records and settlement batches from Razorpay",
+    is_enabled: false, connection_status: "unconfigured", last_tested_at: null,
+    active_job_count: 2,
+    last_success_at: null, last_success_inserted: 0, last_success_updated: 0,
+    last_failure_at: null, last_failure_error: null,
+    total_records_inserted: 0, total_records_updated: 0, total_records_failed: 0,
+    avg_duration_secs: null,
+    latest_run_id: null, latest_run_status: null,
+    latest_run_started: null, latest_run_entity: null, latest_is_running: false,
+  },
+  {
+    integration_key: "gokwik",
+    display_name: "GoKwik",
+    description: "Sync GoKwik prepaid orders and gateway settlements",
+    is_enabled: false, connection_status: "unconfigured", last_tested_at: null,
+    active_job_count: 1,
+    last_success_at: null, last_success_inserted: 0, last_success_updated: 0,
+    last_failure_at: null, last_failure_error: null,
+    total_records_inserted: 0, total_records_updated: 0, total_records_failed: 0,
+    avg_duration_secs: null,
+    latest_run_id: null, latest_run_status: null,
+    latest_run_started: null, latest_run_entity: null, latest_is_running: false,
+  },
+  {
+    integration_key: "bank_feed",
+    display_name: "Bank Feed",
+    description: "Ingest HDFC bank transactions via Account Aggregator or statement upload",
+    is_enabled: false, connection_status: "unconfigured", last_tested_at: null,
+    active_job_count: 1,
+    last_success_at: null, last_success_inserted: 0, last_success_updated: 0,
+    last_failure_at: null, last_failure_error: null,
+    total_records_inserted: 0, total_records_updated: 0, total_records_failed: 0,
+    avg_duration_secs: null,
+    latest_run_id: null, latest_run_status: null,
+    latest_run_started: null, latest_run_entity: null, latest_is_running: false,
+  },
+];
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function IntegrationsPage() {
-  const { data: integrations = [], isLoading: intLoading, refetch } =
+  const { data: liveData, isLoading: intLoading, isError, refetch } =
     useIntegrationSummary();
   const { data: runs = [], isLoading: runsLoading } = useRecentSyncRuns();
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const toggle = (key: string) => setExpanded((p) => (p === key ? null : key));
+
+  // Use live data if available; fall back to static list (pre-migration or RPC error)
+  const integrations: IntegrationSummary[] =
+    liveData && liveData.length > 0 ? liveData : STATIC_INTEGRATIONS;
 
   return (
     <div className="min-h-full p-4 sm:p-6 space-y-6">
@@ -403,6 +477,20 @@ export default function IntegrationsPage() {
           </button>
         </div>
       </PageHeader>
+
+      {/* Migration notice — shown only when RPC isn't available yet */}
+      {isError && (
+        <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
+          <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-[13px] font-semibold text-amber-400">Migration not yet applied</p>
+            <p className="text-[12px] text-muted-foreground mt-0.5">
+              Apply <code className="text-[11px] bg-muted px-1 py-0.5 rounded">supabase/migrations/20260620_integrations_schema.sql</code>{" "}
+              in Supabase SQL Editor to activate live sync status. Showing static layout below.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Integration cards */}
       {intLoading ? (
