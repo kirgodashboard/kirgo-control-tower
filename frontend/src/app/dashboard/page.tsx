@@ -2,6 +2,7 @@ import { DirectorKpiRow } from "@/features/director/kpi-row";
 import { DirectorTrendRow } from "@/features/director/trend-row";
 import { AlertPanel } from "@/features/director/alert-panel";
 import { BusinessSummary } from "@/features/director/business-summary";
+import { StatusChipsStrip } from "@/features/director/status-chips";
 
 export const metadata = { title: "Command Center · Kirgo" };
 
@@ -17,6 +18,9 @@ export default function DirectorCommandCenterPage() {
           Business health snapshot · auto-refreshes every 2 min
         </p>
       </div>
+
+      {/* Status chips — quick-glance real-time indicators */}
+      <StatusChipsStrip />
 
       {/* Business Summary — answers "how is the business doing?" */}
       <BusinessSummary />
