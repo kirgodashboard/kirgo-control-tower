@@ -18,6 +18,7 @@ import {
   X,
   Tags,
   Wallet,
+  Boxes,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -59,6 +60,12 @@ const navGroups = [
       { href: "/dashboard/expenses",           label: "Expense Master",     icon: Receipt,    description: "Expense ledger & analytics" },
       { href: "/dashboard/expense-entry",      label: "New Expense",        icon: FilePlus,   description: "Manual expense entry" },
       { href: "/dashboard/bank-classification",label: "Bank Classification",icon: CreditCard, description: "Classify bank transactions" },
+    ],
+  },
+  {
+    label: "Inventory",
+    items: [
+      { href: "/dashboard/inventory", label: "Stock", icon: Boxes, exact: true, description: "Stock position & reports" },
     ],
   },
   {

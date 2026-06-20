@@ -238,6 +238,69 @@ export interface UnclassifiedTransaction {
   counterparty: string | null;
 }
 
+// ── Inventory ─────────────────────────────────────────────────────────────────
+
+export interface InventoryKpis {
+  total_skus: number;
+  active_skus: number;
+  total_units: number;
+  stock_value_inr: number;
+  low_stock_count: number;
+  out_of_stock_count: number;
+}
+
+export interface StockPositionRow {
+  id: number;
+  sku: string;
+  product_name: string;
+  current_stock: number;
+  reorder_point: number;
+  reorder_qty: number;
+  unit_cost_inr: number | null;
+  stock_value_inr: number | null;
+  location: string | null;
+  status: "ok" | "low" | "out";
+  last_movement_at: string | null;
+}
+
+export interface StockMovementRow {
+  id: number;
+  inventory_item_id: number;
+  sku: string;
+  product_name: string;
+  movement_type: string;
+  quantity: number;
+  stock_after: number;
+  unit_cost_inr: number | null;
+  reference_type: string | null;
+  reference_id: number | null;
+  notes: string | null;
+  moved_at: string;
+}
+
+export interface StockAgeingRow {
+  id: number;
+  sku: string;
+  product_name: string;
+  current_stock: number;
+  days_in_stock: number;
+  age_bucket: "fresh" | "watch" | "slow" | "dead";
+  stock_value_inr: number | null;
+  last_inflow_at: string | null;
+}
+
+export interface ReorderRow {
+  id: number;
+  sku: string;
+  product_name: string;
+  current_stock: number;
+  reorder_point: number;
+  reorder_qty: number;
+  unit_cost_inr: number | null;
+  suggested_order_value_inr: number | null;
+  days_since_last_inflow: number | null;
+}
+
 // ── Order Classification + Receivables ───────────────────────────────────────
 
 export type OrderClass =
