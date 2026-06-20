@@ -101,6 +101,7 @@ export interface ProfitabilityKpis {
   shipping_cost_inr: number;
   cod_charges_inr: number;
   ad_spend_inr: number;
+  promo_spend_inr: number;
   contribution_margin_inr: number;
   contribution_margin_pct: number;
   return_cost_inr: number;
@@ -235,4 +236,55 @@ export interface UnclassifiedTransaction {
   withdrawal_inr: number;
   closing_balance_inr: number | null;
   counterparty: string | null;
+}
+
+// ── Order Classification + Receivables ───────────────────────────────────────
+
+export type OrderClass =
+  | "paid_sale"
+  | "cod_pending"
+  | "influencer_promotion"
+  | "brand_seeding"
+  | "replacement"
+  | "warranty"
+  | "internal_use"
+  | "cancelled"
+  | "unclassified";
+
+export interface ClassificationSummaryItem {
+  classification: string;
+  order_count: number;
+  total_value_inr: number;
+}
+
+export interface OrderClassificationRow {
+  order_id: number;
+  woocommerce_order_id: number;
+  customer_name: string;
+  ordered_at: string;
+  order_total_inr: number;
+  payment_method: string;
+  status: string;
+  billing_city: string | null;
+  classification: OrderClass;
+  is_manual: boolean;
+  notes: string | null;
+}
+
+export interface ReceivablesSummary {
+  total_outstanding_inr: number;
+  order_count: number;
+  avg_days_outstanding: number;
+  oldest_days: number;
+}
+
+export interface ReceivablesListItem {
+  order_id: number;
+  woocommerce_order_id: number;
+  customer_name: string;
+  ordered_at: string;
+  order_total_inr: number;
+  days_outstanding: number;
+  status: string;
+  billing_city: string | null;
 }

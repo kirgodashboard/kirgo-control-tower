@@ -16,6 +16,8 @@ import {
   CreditCard,
   Plug,
   X,
+  Tags,
+  Wallet,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -57,6 +59,13 @@ const navGroups = [
       { href: "/dashboard/expenses",           label: "Expense Master",     icon: Receipt,    description: "Expense ledger & analytics" },
       { href: "/dashboard/expense-entry",      label: "New Expense",        icon: FilePlus,   description: "Manual expense entry" },
       { href: "/dashboard/bank-classification",label: "Bank Classification",icon: CreditCard, description: "Classify bank transactions" },
+    ],
+  },
+  {
+    label: "Orders",
+    items: [
+      { href: "/dashboard/order-classification", label: "Classification",  icon: Tags,   description: "Classify & reclassify orders" },
+      { href: "/dashboard/receivables",          label: "Receivables",     icon: Wallet, description: "Genuine COD outstanding" },
     ],
   },
   {
