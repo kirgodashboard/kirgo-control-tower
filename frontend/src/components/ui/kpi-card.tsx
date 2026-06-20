@@ -32,31 +32,36 @@ export function KpiCard({
   return (
     <div
       className={cn(
-        "relative rounded-xl border bg-card p-5 sm:p-6 flex flex-col overflow-hidden card-hover",
-        alert === "red" && "border-red-500/30 bg-red-500/[0.03]",
+        "relative rounded-xl border bg-card p-4 flex flex-col overflow-hidden card-hover",
+        alert === "red"   && "border-red-500/30 bg-red-500/[0.03]",
         alert === "amber" && "border-amber-400/30 bg-amber-400/[0.03]",
         alert === "green" && "border-emerald-500/20",
         !alert && "border-border",
         className
       )}
     >
-      {/* Alert accent bar */}
-      {alert === "red" && <div className="absolute inset-x-0 top-0 h-[3px] bg-red-500 rounded-t-xl" />}
-      {alert === "amber" && <div className="absolute inset-x-0 top-0 h-[3px] bg-amber-400 rounded-t-xl" />}
-      {alert === "green" && <div className="absolute inset-x-0 top-0 h-[3px] bg-emerald-500 rounded-t-xl" />}
+      {/* Gradient accent bar */}
+      {alert === "red"   && <div className="absolute inset-x-0 top-0 h-[2px] rounded-t-xl bg-gradient-to-r from-red-500 via-red-400 to-transparent" />}
+      {alert === "amber" && <div className="absolute inset-x-0 top-0 h-[2px] rounded-t-xl bg-gradient-to-r from-amber-400 via-amber-300 to-transparent" />}
+      {alert === "green" && <div className="absolute inset-x-0 top-0 h-[2px] rounded-t-xl bg-gradient-to-r from-emerald-500 via-emerald-400 to-transparent" />}
+
+      {/* Subtle inner glow for alert cards */}
+      {alert === "red"   && <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 via-transparent to-transparent pointer-events-none" />}
+      {alert === "amber" && <div className="absolute inset-0 bg-gradient-to-br from-amber-400/5 via-transparent to-transparent pointer-events-none" />}
+      {alert === "green" && <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent pointer-events-none" />}
 
       {/* Top row: label + icon */}
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-[13px] font-semibold text-muted-foreground leading-none">
+      <div className="flex items-center justify-between mb-2.5">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground leading-none">
           {label}
         </p>
         {icon && (
           <span className={cn(
-            "h-7 w-7 rounded-lg flex items-center justify-center",
+            "h-6 w-6 rounded-md flex items-center justify-center",
             alert === "red"   ? "bg-red-500/10 text-red-400" :
             alert === "amber" ? "bg-amber-400/10 text-amber-400" :
             alert === "green" ? "bg-emerald-500/10 text-emerald-400" :
-            "bg-muted text-muted-foreground/60"
+            "bg-muted/60 text-muted-foreground/50"
           )}>
             {icon}
           </span>
@@ -65,7 +70,7 @@ export function KpiCard({
 
       {/* Main value */}
       <p className={cn(
-        "text-[36px] sm:text-[44px] font-bold tracking-tight tabular-nums leading-none text-foreground mb-3",
+        "text-[26px] sm:text-[30px] font-bold tracking-tight tabular-nums leading-none text-foreground mb-2",
         alert === "red"   && "text-red-400",
         alert === "amber" && "text-amber-400",
         alert === "green" && "text-emerald-400",
