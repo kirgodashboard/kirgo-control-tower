@@ -352,6 +352,69 @@ export interface ReceivablesListItem {
   billing_city: string | null;
 }
 
+// ── Extended Receivables ─────────────────────────────────────────────────────
+
+export interface ReceivablesKpis {
+  total_receivables_inr: number;
+  cod_pending_inr: number;
+  cod_pending_count: number;
+  settlement_pending_inr: number;
+  settlement_pending_count: number;
+  avg_collection_days: number;
+  overdue_inr: number;
+  overdue_count: number;
+  collection_efficiency_pct: number;
+}
+
+export interface CustomerReceivablesRow {
+  order_id: number;
+  woocommerce_order_id: number;
+  customer_name: string;
+  ordered_at: string;
+  amount_inr: number;
+  status: string;
+  days_outstanding: number;
+}
+
+export interface CodReceivablesRow {
+  order_id: number;
+  woocommerce_order_id: number;
+  customer_name: string;
+  cod_amount_inr: number;
+  shipment_status: string;
+  expected_settlement_date: string | null;
+}
+
+export interface SettlementPendingRow {
+  gateway: string;
+  settlement_reference: string | null;
+  amount_inr: number;
+  order_count: number | null;
+  settled_at: string | null;
+  age_days: number;
+}
+
+export interface ReceivablesTrendPoint {
+  period: string;
+  new_receivables_inr: number;
+  order_count: number;
+}
+
+export interface ReceivablesAgeingBucket {
+  bucket: string;
+  bucket_label: string;
+  order_count: number;
+  amount_inr: number;
+  sort_order: number;
+}
+
+export interface CollectionPerformancePoint {
+  period: string;
+  amount_settled_inr: number;
+  amount_pending_inr: number;
+  efficiency_pct: number;
+}
+
 // ── Data Quality ─────────────────────────────────────────────────────────────
 
 export interface DataQualitySummary {
