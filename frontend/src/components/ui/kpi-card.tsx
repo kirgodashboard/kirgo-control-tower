@@ -32,7 +32,7 @@ export function KpiCard({
   return (
     <div
       className={cn(
-        "relative rounded-xl border bg-card p-4 flex flex-col overflow-hidden card-hover",
+        "relative rounded-xl border bg-card p-4 flex flex-col overflow-hidden card-hover min-h-[108px]",
         alert === "red"   && "border-red-500/30 bg-red-500/[0.03]",
         alert === "amber" && "border-amber-400/30 bg-amber-400/[0.03]",
         alert === "green" && "border-emerald-500/20",
@@ -78,36 +78,30 @@ export function KpiCard({
         {value ?? "—"}
       </p>
 
-      {/* Delta row */}
-      {(delta != null || subValue) && (
-        <div className="flex items-center gap-2 mt-auto">
-          {delta != null && !isNeutral && (
-            <span className={cn(
-              "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] font-semibold",
-              isPositive
-                ? "bg-emerald-500/10 text-emerald-500"
-                : "bg-red-500/10 text-red-400",
-            )}>
-              {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-              {Math.abs(delta).toFixed(1)}%
-            </span>
-          )}
-          {delta === 0 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[12px] font-semibold bg-muted text-muted-foreground">
-              0.0%
-            </span>
-          )}
-          {(deltaLabel || subValue) && (
-            <span className="text-[12px] text-muted-foreground truncate">
-              {deltaLabel ?? subValue}
-            </span>
-          )}
-        </div>
-      )}
-
-      {subValue && !delta && (
-        <p className="text-[12px] text-muted-foreground mt-auto">{subValue}</p>
-      )}
+      {/* Bottom row: delta badge + label/subValue */}
+      <div className="flex items-center gap-2 mt-auto">
+        {delta != null && !isNeutral && (
+          <span className={cn(
+            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] font-semibold flex-shrink-0",
+            isPositive
+              ? "bg-emerald-500/10 text-emerald-500"
+              : "bg-red-500/10 text-red-400",
+          )}>
+            {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+            {Math.abs(delta).toFixed(1)}%
+          </span>
+        )}
+        {delta === 0 && (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[12px] font-semibold bg-muted text-muted-foreground flex-shrink-0">
+            0.0%
+          </span>
+        )}
+        {(deltaLabel || subValue) && (
+          <span className="text-[12px] text-muted-foreground truncate">
+            {deltaLabel ?? subValue}
+          </span>
+        )}
+      </div>
 
       {children && <div className="mt-3">{children}</div>}
     </div>
