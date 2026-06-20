@@ -2,11 +2,5 @@
   "buildCommand": "next build",
   "outputDirectory": ".next",
   "installCommand": "npm install",
-  "framework": "nextjs",
-  "crons": [
-    {
-      "path": "/api/sync/schedule",
-      "schedule": "*/30 * * * *"
-    }
-  ]
+  "framework": "nextjs"
 }
