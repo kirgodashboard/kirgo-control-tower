@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchExpenseKpis,
   fetchExpenseList,
@@ -9,6 +9,7 @@ import {
   fetchTopVendors,
   fetchExpenseCategories,
   fetchUnclassifiedTransactions,
+  insertExpenseCategory,
 } from "@/lib/data/expenses";
 
 export function useExpenseKpis(start: string, end: string) {
@@ -69,5 +70,14 @@ export function useUnclassifiedTransactions() {
     queryKey: ["unclassified-transactions"],
     queryFn: () => fetchUnclassifiedTransactions(50),
     staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useInsertExpenseCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ name, group }: { name: string; group: string }) =>
+      insertExpenseCategory(name, group),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["expense-categories"] }),
   });
 }

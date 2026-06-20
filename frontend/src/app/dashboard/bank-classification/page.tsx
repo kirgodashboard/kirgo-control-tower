@@ -2,12 +2,106 @@
 
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckCircle, AlertCircle, CreditCard, RefreshCw } from "lucide-react";
+import { CheckCircle, AlertCircle, CreditCard, RefreshCw, Plus, ChevronDown, ChevronUp, Tag, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { useUnclassifiedTransactions, useExpenseCategories } from "@/lib/hooks/use-expenses";
+import { useUnclassifiedTransactions, useExpenseCategories, useInsertExpenseCategory } from "@/lib/hooks/use-expenses";
 import { classifyBankTransaction } from "@/lib/data/expenses";
 import { formatINR } from "@/lib/utils/format";
-import type { UnclassifiedTransaction } from "@/types/kpi";
+import type { UnclassifiedTransaction, ExpenseCategory } from "@/types/kpi";
+
+const CATEGORY_GROUPS = ["Operating", "Finance", "Capital", "Other"];
+
+function ManageCategoriesPanel({ categories }: { categories: ExpenseCategory[] }) {
+  const [open, setOpen]   = useState(false);
+  const [name, setName]   = useState("");
+  const [group, setGroup] = useState("Operating");
+  const [success, setSuccess] = useState("");
+  const { mutate, isPending, error } = useInsertExpenseCategory();
+
+  const handleAdd = () => {
+    if (!name.trim()) return;
+    mutate({ name: name.trim(), group }, {
+      onSuccess: () => {
+        setSuccess(`"${name.trim()}" added`);
+        setName("");
+        setTimeout(() => setSuccess(""), 2500);
+      },
+    });
+  };
+
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-accent/30 transition-colors"
+      >
+        <div className="flex items-center gap-2.5">
+          <Tag className="h-4 w-4 text-violet-400" />
+          <span className="text-[13px] font-semibold text-foreground">Manage Categories</span>
+          <span className="text-[11px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{categories.length}</span>
+        </div>
+        {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+      </button>
+
+      {open && (
+        <div className="border-t border-border px-5 py-4 space-y-4">
+          {/* Add new category form */}
+          <div className="flex items-end gap-2 flex-wrap">
+            <div className="flex-1 min-w-[160px]">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                Category Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                placeholder="e.g. Delivery Charges"
+                className="h-8 w-full px-3 rounded-md border border-border bg-background text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-violet-500"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                Group
+              </label>
+              <select
+                value={group}
+                onChange={(e) => setGroup(e.target.value)}
+                className="h-8 px-2 rounded-md border border-border bg-background text-[13px] text-foreground focus:outline-none focus:ring-1 focus:ring-violet-500"
+              >
+                {CATEGORY_GROUPS.map((g) => <option key={g}>{g}</option>)}
+              </select>
+            </div>
+            <button
+              onClick={handleAdd}
+              disabled={isPending || !name.trim()}
+              className="h-8 px-3 flex items-center gap-1.5 rounded-md bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-[12px] font-semibold transition-colors"
+            >
+              {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+              Add
+            </button>
+            {success && <span className="text-[12px] text-emerald-400 flex items-center gap-1"><CheckCircle className="h-3.5 w-3.5" />{success}</span>}
+            {error && <span className="text-[12px] text-red-400">{(error as Error).message}</span>}
+          </div>
+
+          {/* Existing categories grid */}
+          <div className="flex flex-wrap gap-2">
+            {categories.map((c) => (
+              <span
+                key={c.id}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border bg-muted text-[11px] font-medium text-foreground"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-violet-400 flex-shrink-0" />
+                {c.name}
+                <span className="text-muted-foreground/60">· {c.category_group}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface RowState {
   categoryId: string;
@@ -178,6 +272,9 @@ export default function BankClassificationPage() {
           )}
         </div>
       </div>
+
+      {/* Category management */}
+      <ManageCategoriesPanel categories={categories} />
 
       {/* Table */}
       <div className="rounded-xl border border-border bg-card">

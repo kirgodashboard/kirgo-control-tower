@@ -91,6 +91,15 @@ export async function insertExpense(params: {
   return data as number;
 }
 
+export async function insertExpenseCategory(name: string, group: string): Promise<number> {
+  const { data, error } = await supabase.rpc("insert_expense_category", {
+    p_name:           name.trim(),
+    p_category_group: group,
+  });
+  if (error) throw error;
+  return data as number;
+}
+
 export async function classifyBankTransaction(params: {
   transactionId: number;
   categoryId: number;
