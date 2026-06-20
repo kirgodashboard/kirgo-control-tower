@@ -17,6 +17,27 @@ import {
   Plug,
   X,
 } from "lucide-react";
+import { useState } from "react";
+
+function LogoMark() {
+  const [imgError, setImgError] = useState(false);
+  if (imgError) {
+    return (
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-600 flex-shrink-0">
+        <span className="text-[11px] font-black text-white tracking-tight leading-none">K</span>
+      </div>
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/kirgo-logo.png"
+      alt="Kirgo"
+      className="h-8 w-8 rounded-full object-cover flex-shrink-0"
+      onError={() => setImgError(true)}
+    />
+  );
+}
 
 const navGroups = [
   {
@@ -64,12 +85,7 @@ export function Sidebar({ className, onClose }: SidebarProps) {
     >
       {/* Logo */}
       <div className="h-14 flex items-center gap-3 px-4 border-b border-[hsl(var(--sidebar-border))] flex-shrink-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/kirgo-logo.png"
-          alt="Kirgo"
-          className="h-8 w-8 rounded-full object-cover flex-shrink-0"
-        />
+        <LogoMark />
         <div className="flex flex-col min-w-0 flex-1">
           <span className="text-[13px] font-bold text-foreground tracking-tight leading-none">Kirgo</span>
           <span className="text-[10px] text-[hsl(var(--muted-foreground))] leading-none mt-0.5 font-medium">Control Tower</span>
