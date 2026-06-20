@@ -351,3 +351,21 @@ export interface ReceivablesListItem {
   status: string;
   billing_city: string | null;
 }
+
+// ── Data Quality ─────────────────────────────────────────────────────────────
+
+export interface DataQualitySummary {
+  unclassified_bank_count: number;
+  missing_expense_count: number;
+  cod_delivered_inr: number;
+  cod_received_inr: number;
+  cod_variance_inr: number;
+  unclassified_order_count: number;
+  unmapped_lines_count: number;
+  unresolved_errors_count: number;
+  sync_failures_7d: number;
+  last_sync_at: string | null;
+  low_stock_count: number;
+  out_of_stock_count: number;
+  skus_no_inventory_count: number;
+}

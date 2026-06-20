@@ -19,6 +19,7 @@ import {
   Tags,
   Wallet,
   Boxes,
+  ShieldCheck,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -78,7 +79,8 @@ const navGroups = [
   {
     label: "Data",
     items: [
-      { href: "/dashboard/integrations", label: "Integrations", icon: Plug, description: "API sync status & controls" },
+      { href: "/dashboard/integrations",  label: "Integrations",  icon: Plug,        description: "API sync status & controls" },
+      { href: "/dashboard/data-quality",  label: "Data Quality",  icon: ShieldCheck, description: "Traffic-light health checks" },
     ],
   },
 ];
