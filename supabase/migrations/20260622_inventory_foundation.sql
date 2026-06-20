@@ -6,18 +6,21 @@
 -- No seed data — awaiting opening stock entry from user
 -- =============================================================================
 
--- 1. Enum for movement types
-CREATE TYPE stock_movement_type AS ENUM (
-  'opening',
-  'purchase_in',
-  'sale_out',
-  'return_in',
-  'adjustment_in',
-  'adjustment_out',
-  'sample_out',
-  'transfer_in',
-  'transfer_out'
-);
+-- 1. Enum for movement types (safe if already exists)
+DO $$ BEGIN
+  CREATE TYPE stock_movement_type AS ENUM (
+    'opening',
+    'purchase_in',
+    'sale_out',
+    'return_in',
+    'adjustment_in',
+    'adjustment_out',
+    'sample_out',
+    'transfer_in',
+    'transfer_out'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- 2. inventory_items — one row per SKU
 CREATE TABLE inventory_items (
