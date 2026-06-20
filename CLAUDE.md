@@ -130,6 +130,45 @@ All colors are HSL CSS variables defined in `src/app/globals.css`.
 
 ---
 
+## Business Rules
+
+### BR-201: Commercial Order Classification (CRITICAL)
+
+Orders classified as **`influencer_promotion`**, **`brand_seeding`**, **`internal_use`**, or **`replacement`** are NON-COMMERCIAL and must be treated as follows:
+
+| Dimension | Treatment |
+|-----------|-----------|
+| Revenue KPIs | **EXCLUDED** — never count toward gross revenue, AOV, order counts |
+| Customer Sales KPIs | **EXCLUDED** — not a real customer purchase; don't count for new/repeat/LTV |
+| Receivables | **EXCLUDED** — no real money owed; they are not COD outstanding |
+| Marketing Spend (`promo_spend_inr`) | **INCLUDED** — cost of goods used for promotion |
+| Inventory Consumption | **INCLUDED** — units leave stock; tracked in inventory movements |
+| Promotion Analysis (`get_promo_spend_summary`) | **INCLUDED** — dedicated promo reporting |
+
+**How to enforce in every SQL RPC that touches revenue or orders:**
+```sql
+-- Required JOIN
+LEFT JOIN order_classifications oc ON oc.order_id = o.id
+-- Required WHERE clause
+AND COALESCE(oc.classification, 'paid_sale'::order_class) != ALL(non_commercial_order_classes())
+-- For "orders with no classification" use COALESCE default = 'paid_sale' (commercial)
+```
+
+**NEVER** write an order-count or revenue query without this filter. The canonical function `non_commercial_order_classes()` is the single source of truth — do not hardcode the class names.
+
+The rule is enforced in:
+- `non_commercial_order_classes()` — canonical anchor function
+- All profitability RPCs (`get_profitability_kpis`, `get_profitability_trend`, `get_product_pl`, `get_sku_pl`, `get_city_pl`, `get_launch_pl`, `get_customer_pl`)
+- Executive dashboard RPCs (`get_executive_kpis`, `get_revenue_trend`, `get_period_comparison`, `get_launch_performance`)
+- Customer RPCs (`get_customer_kpis`, `get_director_snapshot`)
+- Data quality COD variance calculation
+
+### Date Dimensions (Revenue)
+- **Executive / Customer / Director KPIs**: use `orders.ordered_at` (real-time order intake)
+- **Profitability P&L suite**: use `shipments.delivered_at` (cash recognition on delivery)
+
+---
+
 ## Data & State Conventions
 
 ### Supabase RPC Pattern
@@ -156,8 +195,8 @@ export function useSomething() {
 - Use `useDateRange()` hook — never manage date state locally in a page
 
 ### Number Formatting
-- Currency (INR): `formatCurrency(n)` from `lib/utils/format.ts` → `₹1.23L`
-- Percentages: `formatPercent(n)` → `12.3%`
+- Currency (INR): `formatINR(n)` from `lib/utils/format.ts` → `₹1.23L`
+- Percentages: `formatPct(n)` → `12.3%`
 - Counts: `formatCount(n)` → `1,234`
 - Never call `toFixed()` or `toLocaleString()` directly in JSX
 
