@@ -31,7 +31,7 @@ function LogoMark() {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/kirgo-logo.png"
+      src="/kirgo-logo.svg"
       alt="Kirgo"
       className="h-8 w-8 rounded-full object-cover flex-shrink-0"
       onError={() => setImgError(true)}

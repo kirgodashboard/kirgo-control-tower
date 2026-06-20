@@ -1,0 +1,16 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark circle background -->
+  <circle cx="32" cy="32" r="32" fill="#1C1C1E"/>
+  <!-- Subtle violet ring -->
+  <circle cx="32" cy="32" r="29" stroke="#7C3AED" stroke-width="1" stroke-opacity="0.4"/>
+  <!-- Bold lowercase k -->
+  <text
+    x="33" y="44"
+    text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="32"
+    font-weight="700"
+    font-style="italic"
+    fill="#FFFFFF"
+  >k</text>
+</svg>
