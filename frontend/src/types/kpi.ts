@@ -247,6 +247,26 @@ export interface InventoryKpis {
   stock_value_inr: number;
   low_stock_count: number;
   out_of_stock_count: number;
+  // BOM-aware fields
+  bom_units_consumed: number;
+  hidden_in_sets_units: number;
+  total_direct_plus_set_units: number;
+}
+
+export interface TrueConsumptionRow {
+  product_id: number;
+  product_name: string;
+  product_type: string;
+  direct_units: number;
+  set_units: number;
+  total_units: number;
+  direct_revenue_inr: number;
+  set_allocated_rev_inr: number;
+  total_revenue_inr: number;
+  velocity_90d_units: number;
+  avg_monthly_velocity: number;
+  current_stock_units: number;
+  days_of_stock: number | null;
 }
 
 export interface StockPositionRow {

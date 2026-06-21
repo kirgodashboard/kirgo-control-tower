@@ -11,6 +11,7 @@ export interface IntegrationSummary {
   is_enabled:             boolean;
   connection_status:      ConnectionStatus;
   last_tested_at:         string | null;
+  secret_configured:      boolean;
   active_job_count:       number;
   // last successful run
   last_success_at:        string | null;
@@ -85,4 +86,44 @@ export const INTEGRATION_ICONS: Record<string, string> = {
   razorpay:    "💳",
   gokwik:      "⚡",
   bank_feed:   "🏦",
+  ccavenue:    "🔐",
+};
+
+// ── Credential management (settings page) ────────────────────────────────────
+
+export type CredentialFieldType = "text" | "password" | "email" | "url";
+
+export interface CredentialField {
+  key:         string;
+  label:       string;
+  type:        CredentialFieldType;
+  placeholder: string;
+  required:    boolean;
+}
+
+export const CREDENTIAL_SCHEMAS: Record<string, CredentialField[]> = {
+  woocommerce: [
+    { key: "store_url",       label: "Store URL",       type: "url",      placeholder: "https://shop.example.com", required: true },
+    { key: "consumer_key",    label: "Consumer Key",    type: "text",     placeholder: "ck_...",                   required: true },
+    { key: "consumer_secret", label: "Consumer Secret", type: "password", placeholder: "cs_...",                   required: true },
+  ],
+  shiprocket: [
+    { key: "email",    label: "Email",    type: "email",    placeholder: "admin@yourstore.com", required: true },
+    { key: "password", label: "Password", type: "password", placeholder: "••••••••",            required: true },
+  ],
+  razorpay: [
+    { key: "key_id",     label: "Key ID",     type: "text",     placeholder: "rzp_live_...",     required: true },
+    { key: "key_secret", label: "Key Secret", type: "password", placeholder: "••••••••••••••••", required: true },
+  ],
+  gokwik: [
+    { key: "merchant_id", label: "Merchant ID", type: "text",     placeholder: "MID_...",  required: true },
+    { key: "api_key",     label: "API Key",     type: "text",     placeholder: "gk_...",   required: true },
+    { key: "api_secret",  label: "API Secret",  type: "password", placeholder: "••••••••", required: true },
+  ],
+  ccavenue: [
+    { key: "merchant_id", label: "Merchant ID", type: "text",     placeholder: "1234567",  required: true },
+    { key: "access_code", label: "Access Code", type: "text",     placeholder: "AVXXX...", required: true },
+    { key: "working_key", label: "Working Key", type: "password", placeholder: "••••••••", required: true },
+  ],
+  bank_feed: [],
 };

@@ -391,7 +391,7 @@ const STATIC_INTEGRATIONS: IntegrationSummary[] = [
     total_records_inserted: 0, total_records_updated: 0, total_records_failed: 0,
     avg_duration_secs: null,
     latest_run_id: null, latest_run_status: null,
-    latest_run_started: null, latest_run_entity: null, latest_is_running: false,
+    latest_run_started: null, latest_run_entity: null, latest_is_running: false, secret_configured: false,
   },
   {
     integration_key: "shiprocket",
@@ -404,7 +404,7 @@ const STATIC_INTEGRATIONS: IntegrationSummary[] = [
     total_records_inserted: 0, total_records_updated: 0, total_records_failed: 0,
     avg_duration_secs: null,
     latest_run_id: null, latest_run_status: null,
-    latest_run_started: null, latest_run_entity: null, latest_is_running: false,
+    latest_run_started: null, latest_run_entity: null, latest_is_running: false, secret_configured: false,
   },
   {
     integration_key: "razorpay",
@@ -417,7 +417,7 @@ const STATIC_INTEGRATIONS: IntegrationSummary[] = [
     total_records_inserted: 0, total_records_updated: 0, total_records_failed: 0,
     avg_duration_secs: null,
     latest_run_id: null, latest_run_status: null,
-    latest_run_started: null, latest_run_entity: null, latest_is_running: false,
+    latest_run_started: null, latest_run_entity: null, latest_is_running: false, secret_configured: false,
   },
   {
     integration_key: "gokwik",
@@ -430,7 +430,7 @@ const STATIC_INTEGRATIONS: IntegrationSummary[] = [
     total_records_inserted: 0, total_records_updated: 0, total_records_failed: 0,
     avg_duration_secs: null,
     latest_run_id: null, latest_run_status: null,
-    latest_run_started: null, latest_run_entity: null, latest_is_running: false,
+    latest_run_started: null, latest_run_entity: null, latest_is_running: false, secret_configured: false,
   },
   {
     integration_key: "bank_feed",
@@ -443,7 +443,7 @@ const STATIC_INTEGRATIONS: IntegrationSummary[] = [
     total_records_inserted: 0, total_records_updated: 0, total_records_failed: 0,
     avg_duration_secs: null,
     latest_run_id: null, latest_run_status: null,
-    latest_run_started: null, latest_run_entity: null, latest_is_running: false,
+    latest_run_started: null, latest_run_entity: null, latest_is_running: false, secret_configured: false,
   },
 ];
 

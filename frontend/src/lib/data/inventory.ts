@@ -5,6 +5,7 @@ import type {
   StockMovementRow,
   StockAgeingRow,
   ReorderRow,
+  TrueConsumptionRow,
 } from "@/types/kpi";
 
 export async function fetchInventoryKpis(): Promise<InventoryKpis> {
@@ -49,4 +50,10 @@ export async function fetchReorderReport(): Promise<ReorderRow[]> {
   const { data, error } = await supabase.rpc("get_reorder_report");
   if (error) throw error;
   return (data ?? []) as ReorderRow[];
+}
+
+export async function fetchTrueConsumption(): Promise<TrueConsumptionRow[]> {
+  const { data, error } = await supabase.rpc("get_true_consumption");
+  if (error) throw error;
+  return (data ?? []) as TrueConsumptionRow[];
 }

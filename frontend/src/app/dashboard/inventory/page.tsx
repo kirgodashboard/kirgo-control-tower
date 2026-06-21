@@ -25,11 +25,12 @@ import {
   useStockMovements,
   useStockAgeing,
   useReorderReport,
+  useTrueConsumption,
 } from "@/lib/hooks/use-inventory";
 import { formatINR, formatCount, formatDate } from "@/lib/utils/format";
-import type { StockPositionRow, StockMovementRow, StockAgeingRow, ReorderRow } from "@/types/kpi";
+import type { StockPositionRow, StockMovementRow, StockAgeingRow, ReorderRow, TrueConsumptionRow } from "@/types/kpi";
 
-type Tab = "position" | "movement" | "ageing" | "reorder";
+type Tab = "position" | "movement" | "ageing" | "reorder" | "true-demand";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -307,13 +308,79 @@ function ReorderTable({ rows, loading }: { rows: ReorderRow[]; loading: boolean 
   );
 }
 
+// ── True Demand table ─────────────────────────────────────────────────────────
+
+function TrueDemandTable({ rows, loading }: { rows: TrueConsumptionRow[]; loading: boolean }) {
+  if (loading) return <div className="h-52 m-4 rounded-lg skeleton" />;
+  if (rows.length === 0) return <EmptyReport message="BOM data not yet populated. Run the BOM backfill migration to enable true demand." />;
+
+  const bras     = rows.filter(r => r.product_type === "sports_bra");
+  const leggings = rows.filter(r => r.product_type === "leggings");
+
+  function ProductSection({ items, label }: { items: TrueConsumptionRow[]; label: string }) {
+    return (
+      <>
+        <tr className="bg-muted/30 border-b border-border">
+          <td colSpan={9} className="px-3 py-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            {label}
+          </td>
+        </tr>
+        {items.map(r => {
+          const setPct = r.total_units > 0 ? Math.round((r.set_units / r.total_units) * 100) : 0;
+          const daysClass =
+            r.days_of_stock == null ? "text-muted-foreground" :
+            r.days_of_stock < 30   ? "text-red-400 font-bold" :
+            r.days_of_stock < 60   ? "text-amber-400 font-semibold" :
+                                     "text-emerald-500";
+          return (
+            <tr key={r.product_id} className="border-b border-border/30 hover:bg-accent/20 transition-colors">
+              <td className="px-3 py-2.5 text-[12px] font-medium text-foreground">{r.product_name}</td>
+              <td className="px-3 py-2.5 text-[12px] tabular-nums text-right text-muted-foreground">{formatCount(r.direct_units)}</td>
+              <td className="px-3 py-2.5 text-[12px] tabular-nums text-right text-violet-400">{formatCount(r.set_units)}</td>
+              <td className="px-3 py-2.5 text-[13px] tabular-nums text-right font-bold text-foreground">{formatCount(r.total_units)}</td>
+              <td className="px-3 py-2.5 text-[12px] tabular-nums text-right text-muted-foreground">{setPct}%</td>
+              <td className="px-3 py-2.5 text-[12px] tabular-nums text-right text-muted-foreground">{formatINR(r.total_revenue_inr)}</td>
+              <td className="px-3 py-2.5 text-[12px] tabular-nums text-right text-muted-foreground">{r.avg_monthly_velocity}/mo</td>
+              <td className="px-3 py-2.5 text-[12px] tabular-nums text-right text-foreground font-semibold">{formatCount(r.current_stock_units)}</td>
+              <td className={cn("px-3 py-2.5 text-[12px] tabular-nums text-right", daysClass)}>
+                {r.days_of_stock != null ? `${r.days_of_stock}d` : "—"}
+              </td>
+            </tr>
+          );
+        })}
+      </>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-border">
+            {["Product","Direct Units","Via Sets","Total Units","Set %","Total Revenue","Avg Monthly","In Stock","Days of Stock"].map(h => (
+              <th key={h} className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <ProductSection items={bras}     label="Sports Bras" />
+          <ProductSection items={leggings} label="Leggings" />
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // ── main page ─────────────────────────────────────────────────────────────────
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: "position", label: "Stock Position" },
-  { id: "movement", label: "Stock Movement" },
-  { id: "ageing",   label: "Stock Ageing" },
-  { id: "reorder",  label: "Reorder" },
+  { id: "position",    label: "Stock Position" },
+  { id: "movement",    label: "Stock Movement" },
+  { id: "ageing",      label: "Stock Ageing" },
+  { id: "reorder",     label: "Reorder" },
+  { id: "true-demand", label: "True Demand" },
 ];
 
 export default function InventoryPage() {
@@ -326,6 +393,7 @@ export default function InventoryPage() {
   const { data: movements = [], isLoading: movementsLoading } = useStockMovements();
   const { data: ageing = [], isLoading: ageingLoading } = useStockAgeing();
   const { data: reorder = [], isLoading: reorderLoading } = useReorderReport();
+  const { data: trueDemand = [], isLoading: trueDemandLoading } = useTrueConsumption();
 
   const isEmpty = !kpisLoading && (kpis?.total_skus ?? 0) === 0;
 
@@ -510,6 +578,19 @@ export default function InventoryPage() {
                 </p>
               </div>
               <ReorderTable rows={reorder} loading={reorderLoading} />
+            </div>
+          )}
+
+          {tab === "true-demand" && (
+            <div className="rounded-xl border border-border bg-card">
+              <div className="px-5 py-3 border-b border-border">
+                <p className="text-[13px] font-semibold text-foreground">True Demand</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  BOM-adjusted consumption per component product — direct standalone sales + units hidden inside Sets.
+                  Days of stock uses trailing-90d velocity.
+                </p>
+              </div>
+              <TrueDemandTable rows={trueDemand} loading={trueDemandLoading} />
             </div>
           )}
 

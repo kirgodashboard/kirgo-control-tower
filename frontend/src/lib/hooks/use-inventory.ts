@@ -7,6 +7,7 @@ import {
   fetchStockMovements,
   fetchStockAgeing,
   fetchReorderReport,
+  fetchTrueConsumption,
 } from "@/lib/data/inventory";
 
 export function useInventoryKpis() {
@@ -45,6 +46,14 @@ export function useReorderReport() {
   return useQuery({
     queryKey: ["reorder-report"],
     queryFn: fetchReorderReport,
+    staleTime: 60_000,
+  });
+}
+
+export function useTrueConsumption() {
+  return useQuery({
+    queryKey: ["true-consumption"],
+    queryFn: fetchTrueConsumption,
     staleTime: 60_000,
   });
 }
