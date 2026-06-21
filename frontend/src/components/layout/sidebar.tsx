@@ -21,6 +21,9 @@ import {
   Boxes,
   ShieldCheck,
   LineChart,
+  SlidersHorizontal,
+  Building2,
+  Rss,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -55,6 +58,7 @@ const navGroups = [
       { href: "/dashboard/customers",    label: "Customers",      icon: Users,                description: "Acquisition & retention" },
       { href: "/dashboard/operations",   label: "Operations",     icon: Package,              description: "Shipments & logistics" },
       { href: "/dashboard/finance",      label: "Finance",        icon: Landmark,             description: "Cash & settlements" },
+      { href: "/dashboard/bank",         label: "Bank",           icon: Building2,             description: "Bank feed & transactions" },
     ],
   },
   {
@@ -83,6 +87,14 @@ const navGroups = [
     items: [
       { href: "/dashboard/integrations",  label: "Integrations",  icon: Plug,        description: "API sync status & controls" },
       { href: "/dashboard/data-quality",  label: "Data Quality",  icon: ShieldCheck, description: "Traffic-light health checks" },
+    ],
+  },
+  {
+    label: "Settings",
+    items: [
+      { href: "/settings/company",      label: "Company",      icon: Building2,          description: "Brand, tax & regional config" },
+      { href: "/settings/integrations", label: "Integrations", icon: SlidersHorizontal,  description: "Credentials & sync config" },
+      { href: "/settings/bank-feeds",   label: "Bank Feeds",   icon: Rss,                description: "Accounts & import profiles" },
     ],
   },
 ];
