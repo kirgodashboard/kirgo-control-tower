@@ -20,6 +20,7 @@ import {
   Wallet,
   Boxes,
   ShieldCheck,
+  LineChart,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -49,6 +50,7 @@ const navGroups = [
     items: [
       { href: "/dashboard",              label: "Command Center", icon: Radio,               exact: true, description: "System snapshot" },
       { href: "/dashboard/executive",    label: "Executive",      icon: TrendingUp,           description: "Revenue & growth" },
+      { href: "/dashboard/forecasting",  label: "Forecasting",    icon: LineChart,             description: "Revenue & cash projections" },
       { href: "/dashboard/profitability",label: "Profitability",  icon: ChartNoAxesCombined,  description: "Margins & P&L" },
       { href: "/dashboard/customers",    label: "Customers",      icon: Users,                description: "Acquisition & retention" },
       { href: "/dashboard/operations",   label: "Operations",     icon: Package,              description: "Shipments & logistics" },

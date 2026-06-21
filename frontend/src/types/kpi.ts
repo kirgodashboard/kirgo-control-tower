@@ -415,6 +415,72 @@ export interface CollectionPerformancePoint {
   efficiency_pct: number;
 }
 
+// ── Forecasting ──────────────────────────────────────────────────────────────
+
+export interface ForecastHorizon {
+  label: string;
+  days: number;
+  conservative_inr: number;
+  expected_inr: number;
+  optimistic_inr: number;
+}
+
+export interface RevenueForecast {
+  baseline_monthly_inr: number;
+  avg_6m_monthly_inr: number;
+  growth_rate_pct: number;
+  months_of_data: number;
+  generated_at: string;
+  horizon_30d: ForecastHorizon;
+  horizon_90d: ForecastHorizon;
+  horizon_180d: ForecastHorizon;
+}
+
+export interface CashFlowScenario {
+  inflows_inr: number;
+  outflows_inr: number;
+  net_inr: number;
+}
+
+export interface CashFlowHorizon {
+  label: string;
+  days: number;
+  conservative: CashFlowScenario;
+  expected: CashFlowScenario;
+  optimistic: CashFlowScenario;
+}
+
+export interface CashFlowForecast {
+  cogs_pct: number;
+  shipping_pct: number;
+  return_rate_pct: number;
+  total_outflow_pct: number;
+  note: string;
+  horizon_30d: CashFlowHorizon;
+  horizon_90d: CashFlowHorizon;
+  horizon_180d: CashFlowHorizon;
+}
+
+export interface CustomerForecastPoint {
+  month: string;
+  new_customers_conservative: number;
+  new_customers_expected: number;
+  new_customers_optimistic: number;
+  active_customers_expected: number;
+  cumulative_base: number;
+  cumulative_expected: number;
+  repeat_rate_pct: number;
+}
+
+export interface ForecastChartPoint {
+  month: string;
+  is_actual: boolean;
+  actual_inr: number | null;
+  conservative_inr: number | null;
+  expected_inr: number | null;
+  optimistic_inr: number | null;
+}
+
 // ── Data Quality ─────────────────────────────────────────────────────────────
 
 export interface DataQualitySummary {

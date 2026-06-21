@@ -3,6 +3,7 @@ import { DirectorTrendRow } from "@/features/director/trend-row";
 import { AlertPanel } from "@/features/director/alert-panel";
 import { BusinessSummary } from "@/features/director/business-summary";
 import { StatusChipsStrip } from "@/features/director/status-chips";
+import { ForecastInsightCards } from "@/features/director/forecast-cards";
 
 export const metadata = { title: "Command Center · Kirgo" };
 
@@ -30,6 +31,11 @@ export default function DirectorCommandCenterPage() {
 
       {/* Trend charts */}
       <DirectorTrendRow />
+
+      {/* Forecast Outlook */}
+      <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
+        <ForecastInsightCards />
+      </div>
 
       {/* Active Alerts */}
       <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
