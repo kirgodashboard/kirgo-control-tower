@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabase/client";
 import type { IntegrationSummary, SyncRun, SyncJob } from "@/types/integrations";
 
 export async function fetchIntegrationSummary(): Promise<IntegrationSummary[]> {
-  const { data, error } = await supabase.rpc("get_integration_summary");
+  const { data, error } = await supabase.rpc("get_integration_summary", { p_company_id: 1 });
   if (error) throw error;
   return (data ?? []) as IntegrationSummary[];
 }
