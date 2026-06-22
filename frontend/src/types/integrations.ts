@@ -108,8 +108,8 @@ export const CREDENTIAL_SCHEMAS: Record<string, CredentialField[]> = {
     { key: "consumer_secret", label: "Consumer Secret", type: "password", placeholder: "cs_...",                   required: true },
   ],
   shiprocket: [
-    { key: "email",     label: "Email",     type: "email",    placeholder: "admin@yourstore.com", required: true },
-    { key: "api_token", label: "API Token", type: "password", placeholder: "Paste token from Shiprocket Settings → API", required: true },
+    { key: "email",    label: "API User Email",    type: "email",    placeholder: "e.g. kirgo-api@gmail.com (NOT your main login)", required: true },
+    { key: "password", label: "API User Password", type: "password", placeholder: "Password set when creating the API user",          required: true },
   ],
   razorpay: [
     { key: "key_id",     label: "Key ID",     type: "text",     placeholder: "rzp_live_...",     required: true },

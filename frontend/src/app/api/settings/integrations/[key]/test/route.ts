@@ -62,14 +62,17 @@ export async function POST(
       }
 
       case "shiprocket": {
-        const c = creds as Record<string, string>;
-        // Use pre-generated API token directly as Bearer (from Shiprocket Settings → API)
-        const token = c.api_token ?? c.password; // fallback for legacy password-stored creds
-        const res = await fetch("https://apiv2.shiprocket.in/v1/external/shipments?per_page=1", {
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        const { email, password } = creds as Record<string, string>;
+        const loginRes = await fetch("https://apiv2.shiprocket.in/v1/external/auth/login", {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ email, password }),
           signal:  AbortSignal.timeout(10_000),
         });
-        if (!res.ok) testError = `Shiprocket returned ${res.status} — check API token`;
+        const loginJson = await loginRes.json().catch(() => ({}));
+        if (!loginRes.ok || !loginJson.token) {
+          testError = loginJson.message ?? `Login failed (${loginRes.status}) — check API User credentials`;
+        }
         break;
       }
 
