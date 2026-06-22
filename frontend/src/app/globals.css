@@ -4,32 +4,32 @@
 
 @layer base {
   :root {
-    /* Light mode — slightly darker background for card contrast */
-    --background: 0 0% 92%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    /* Light mode — deeper background so cards lift cleanly */
+    --background: 220 16% 84%;        /* #d1d5de — noticeably deeper than before */
+    --foreground: 222 40% 10%;
+    --card: 0 0% 100%;                /* pure white cards — maximum contrast */
+    --card-foreground: 222 40% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 222 40% 10%;
     --primary: 222 47% 11%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
-    --accent: 220 14% 94%;
-    --accent-foreground: 222 47% 11%;
+    --secondary: 220 14% 94%;
+    --secondary-foreground: 222 40% 10%;
+    --muted: 220 14% 92%;
+    --muted-foreground: 220 10% 36%;  /* darker for clearer label text */
+    --accent: 220 14% 90%;
+    --accent-foreground: 222 40% 10%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 222 47% 11%;
+    --border: 220 13% 82%;            /* more visible on darker base */
+    --input: 220 13% 88%;
+    --ring: 258 90% 60%;
     --radius: 0.5rem;
-    --sidebar: 220 14% 97%;
-    --sidebar-foreground: 220 9% 46%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-accent: 220 14% 94%;
-    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar: 220 14% 94%;
+    --sidebar-foreground: 220 10% 36%;
+    --sidebar-border: 220 13% 82%;
+    --sidebar-accent: 220 14% 89%;
+    --sidebar-accent-foreground: 222 40% 10%;
     /* Alert semantic */
     --alert-red: 0 84% 60%;
     --alert-amber: 38 92% 50%;
@@ -37,31 +37,31 @@
   }
 
   .dark {
-    /* Dark mode — Linear/Vercel quality deep zinc */
-    --background: 240 6% 7%;         /* #101012 — deeper than before */
-    --foreground: 0 0% 95%;
-    --card: 240 5% 10%;              /* #18181c — card surface */
-    --card-foreground: 0 0% 95%;
-    --popover: 240 5% 12%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 258 90% 66%;          /* violet-500 — brand accent */
+    /* Dark mode — deeper base, lifted cards, sharper text */
+    --background: 240 8% 5%;          /* #0c0c0f — very deep base */
+    --foreground: 0 0% 97%;           /* near-white for primary text */
+    --card: 240 6% 12%;               /* #1c1c22 — clearly lifted off base */
+    --card-foreground: 0 0% 97%;
+    --popover: 240 6% 13%;
+    --popover-foreground: 0 0% 97%;
+    --primary: 258 90% 66%;           /* violet-500 — brand accent */
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 5% 14%;
-    --secondary-foreground: 0 0% 85%;
-    --muted: 240 5% 14%;
-    --muted-foreground: 240 5% 55%;  /* slightly lighter for readability */
-    --accent: 240 5% 16%;
-    --accent-foreground: 0 0% 90%;
+    --secondary: 240 5% 17%;
+    --secondary-foreground: 0 0% 88%;
+    --muted: 240 5% 17%;
+    --muted-foreground: 240 5% 65%;   /* brighter for legible secondary text */
+    --accent: 240 5% 20%;
+    --accent-foreground: 0 0% 92%;
     --destructive: 0 63% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 4% 18%;            /* subtle, not distracting */
-    --input: 240 5% 16%;
+    --border: 240 4% 22%;             /* clearly visible card edges */
+    --input: 240 5% 18%;
     --ring: 258 90% 66%;
-    --sidebar: 240 7% 6%;            /* sidebar slightly darker */
-    --sidebar-foreground: 240 5% 55%;
-    --sidebar-border: 240 4% 13%;
-    --sidebar-accent: 240 5% 14%;
-    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar: 240 9% 4%;             /* sidebar even darker than page */
+    --sidebar-foreground: 240 5% 62%;
+    --sidebar-border: 240 5% 14%;
+    --sidebar-accent: 240 5% 16%;
+    --sidebar-accent-foreground: 0 0% 92%;
     /* Alert semantic */
     --alert-red: 0 63% 50%;
     --alert-amber: 38 92% 50%;
