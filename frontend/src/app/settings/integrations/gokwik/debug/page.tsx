@@ -17,7 +17,8 @@ interface ProbeResult {
   credentials: {
     loaded: boolean;
     merchant_id_present: boolean;
-    api_key_present: boolean;
+    app_id_present: boolean;
+    app_secret_present: boolean;
     error: string | null;
   };
   probe: {
@@ -160,8 +161,11 @@ export default function GoKwikDebugPage() {
               <Row label="merchant_id">
                 <StatusChip ok={data.credentials.merchant_id_present} label={data.credentials.merchant_id_present ? "Present" : "Missing"} />
               </Row>
-              <Row label="api_key">
-                <StatusChip ok={data.credentials.api_key_present} label={data.credentials.api_key_present ? "Present" : "Missing"} />
+              <Row label="app_id">
+                <StatusChip ok={data.credentials.app_id_present} label={data.credentials.app_id_present ? "Present" : "Missing"} />
+              </Row>
+              <Row label="app_secret">
+                <StatusChip ok={data.credentials.app_secret_present} label={data.credentials.app_secret_present ? "Present" : "Missing"} />
               </Row>
               {data.credentials.error && (
                 <Row label="Vault Error">

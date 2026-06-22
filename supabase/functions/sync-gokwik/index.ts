@@ -6,7 +6,7 @@ import {
 
 const GK_BASE = "https://api.gokwik.co/v1";
 
-interface GkCredentials { merchant_id: string; api_key: string; }
+interface GkCredentials { merchant_id: string; app_id: string; app_secret: string; }
 
 interface GkOrder {
   order_id: string; merchant_ref: string; amount: number; status: string;
@@ -32,7 +32,7 @@ async function syncGoKwikOrders(
   while (hasMore) {
     const res = await fetchWithRetry(`${GK_BASE}/merchant/orders`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${creds.api_key}`, "Content-Type": "application/json", "X-Merchant-Id": creds.merchant_id },
+      headers: { Authorization: `Bearer ${creds.app_id}`, "Content-Type": "application/json", "X-Merchant-Id": creds.merchant_id, "X-App-Secret": creds.app_secret },
       body: JSON.stringify({ from_date: after.slice(0, 10), to_date: new Date().toISOString().slice(0, 10), page, limit: job.batch_size }),
     });
     if (!res.ok) throw new Error(`GoKwik orders API: ${res.status}`);

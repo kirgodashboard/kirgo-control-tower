@@ -14,7 +14,7 @@ export async function GET() {
   const probeTimestamp = new Date().toISOString();
 
   // 1 — pull credentials from Vault
-  let creds: { merchant_id: string; api_key: string } | null = null;
+  let creds: { merchant_id: string; app_id: string; app_secret: string } | null = null;
   let credError: string | null = null;
   try {
     const { data, error } = await db.rpc("get_integration_secret", {
@@ -55,9 +55,10 @@ export async function GET() {
       const res = await fetch(ENDPOINT_URL, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${creds.api_key}`,
+          Authorization: `Bearer ${creds.app_id}`,
           "Content-Type": "application/json",
           "X-Merchant-Id": creds.merchant_id,
+          "X-App-Secret": creds.app_secret,
         },
         body: JSON.stringify({ from_date: today, to_date: today, page: 1, limit: 1 }),
       });
@@ -80,7 +81,8 @@ export async function GET() {
     credentials: {
       loaded: !!creds,
       merchant_id_present: !!creds?.merchant_id,
-      api_key_present: !!creds?.api_key,
+      app_id_present: !!creds?.app_id,
+      app_secret_present: !!creds?.app_secret,
       error: credError,
     },
     probe: {
