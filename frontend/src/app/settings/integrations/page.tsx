@@ -115,7 +115,7 @@ function CredentialForm({
           headers: { "Content-Type": "application/json" },
           body:    JSON.stringify({ credentials: values }),
         });
-        const json = await res.json();
+        const json = await res.json().catch(() => ({ success: false, error: `Server error (${res.status}) — check SUPABASE_SERVICE_ROLE_KEY env var` }));
         if (!res.ok || !json.success) throw new Error(json.error ?? "Failed to save");
         onSaved();
       } catch (err: unknown) {

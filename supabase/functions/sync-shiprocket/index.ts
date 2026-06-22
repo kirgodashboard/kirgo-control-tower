@@ -1,6 +1,6 @@
 // Supabase Edge Function: sync-shiprocket
 // Pulls shipment data from Shiprocket API v1.
-// Credentials: email + password → JWT (valid 24h, cached in Vault as shiprocket_jwt).
+// Credentials: email + api_token (pre-generated from Shiprocket Settings → API).
 // Writes to: shipments (existing table — upsert on awb_code).
 // Idempotent: awb_code is the natural dedup key per shipment.
 
@@ -19,8 +19,9 @@ import {
 const SR_BASE = "https://apiv2.shiprocket.in/v1/external";
 
 interface SrCredentials {
-  email:    string;
-  password: string;
+  email:     string;
+  api_token: string;
+  password?: string; // legacy field — ignored
 }
 
 interface SrShipment {
@@ -65,16 +66,9 @@ async function loadCredentials(
   return JSON.parse(data.decrypted_secret) as SrCredentials;
 }
 
-async function getJwt(creds: SrCredentials): Promise<string> {
-  const res = await fetchWithRetry(`${SR_BASE}/auth/login`, {
-    method:  "POST",
-    headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({ email: creds.email, password: creds.password }),
-  });
-  if (!res.ok) throw new Error(`Shiprocket auth failed: ${res.status}`);
-  const body = await res.json();
-  if (!body.token) throw new Error("No token in Shiprocket auth response");
-  return body.token as string;
+function getJwt(creds: SrCredentials): string {
+  if (!creds.api_token) throw new Error("Shiprocket api_token not configured — save credentials in Settings → Integrations");
+  return creds.api_token;
 }
 
 // ─── Map Shiprocket status to our status check constraint ────────────────────
