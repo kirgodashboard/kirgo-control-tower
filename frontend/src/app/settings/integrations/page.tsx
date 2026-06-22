@@ -122,11 +122,12 @@ const CATEGORIES: Category[] = [
 
 // ── status helpers ────────────────────────────────────────────────────────────
 
-function StatusBadge({ status, isRunning }: { status: ConnectionStatus; isRunning: boolean }) {
+function StatusBadge({ status, isRunning, runningEntity }: { status: ConnectionStatus; isRunning: boolean; runningEntity?: string | null }) {
   if (isRunning) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-amber-400/10 text-amber-400 border-amber-400/20">
-        <Loader2 className="h-3 w-3 animate-spin" /> Syncing
+        <Loader2 className="h-3 w-3 animate-spin" />
+        Syncing{runningEntity ? ` ${runningEntity}` : ""}
       </span>
     );
   }
@@ -357,7 +358,11 @@ function IntegrationCard({ integration }: { integration: IntegrationSummary }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="text-[14px] font-semibold text-foreground">{meta.name}</h3>
-            <StatusBadge status={integration.connection_status} isRunning={integration.latest_is_running} />
+            <StatusBadge
+              status={integration.connection_status}
+              isRunning={integration.latest_is_running}
+              runningEntity={integration.latest_run_entity}
+            />
             {isNew && (
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-violet-500/10 border border-violet-500/20 text-[10px] font-semibold text-violet-400">
                 <Zap className="h-2.5 w-2.5" /> New
@@ -370,11 +375,19 @@ function IntegrationCard({ integration }: { integration: IntegrationSummary }) {
             )}
           </div>
           <p className="text-[12px] text-muted-foreground mt-0.5 leading-relaxed">{meta.description}</p>
-          {lastSync && (
+          {integration.latest_is_running && integration.latest_run_started ? (
+            <p className="text-[11px] text-amber-400 mt-1 flex items-center gap-1">
+              <Loader2 className="h-2.5 w-2.5 animate-spin" />
+              Started {formatDate(integration.latest_run_started)} — page auto-refreshes every 5 s
+            </p>
+          ) : lastSync ? (
             <p className="text-[11px] text-muted-foreground mt-1">
               Last sync: <span className="text-foreground">{formatDate(lastSync)}</span>
+              {integration.last_success_updated > 0 && (
+                <span className="text-muted-foreground"> · {integration.last_success_updated.toLocaleString()} records</span>
+              )}
             </p>
-          )}
+          ) : null}
         </div>
         <button
           onClick={handleToggle}
@@ -504,7 +517,13 @@ export default function IntegrationSettingsPage() {
   const { data: integrations = [], isLoading, refetch } = useQuery({
     queryKey: ["integration-summary-settings"],
     queryFn:  fetchIntegrationSummary,
-    staleTime: 30_000,
+    staleTime: 5_000,
+    refetchOnWindowFocus: true,
+    // poll every 5 s while any sync is running, slow down to 30 s otherwise
+    refetchInterval: (query): number => {
+      const rows = (query.state.data as IntegrationSummary[]) ?? [];
+      return rows.some((i: IntegrationSummary) => i.latest_is_running) ? 5_000 : 30_000;
+    },
   });
 
   const byKey = Object.fromEntries(integrations.map((i) => [i.integration_key, i]));
@@ -549,16 +568,6 @@ export default function IntegrationSettingsPage() {
           <RefreshCw className="h-3.5 w-3.5" /> Refresh
         </button>
       </PageHeader>
-
-      {/* Security notice */}
-      <div className="flex items-start gap-3 px-4 py-3 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04]">
-        <ShieldCheck className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-        <p className="text-[12px] text-muted-foreground leading-relaxed">
-          All credentials are encrypted with AES-256 and stored exclusively in{" "}
-          <span className="text-foreground font-medium">Supabase Vault</span>.
-          Only secret references appear in the database — raw keys are never logged or returned by API routes.
-        </p>
-      </div>
 
       {/* Category sections */}
       {CATEGORIES.map((cat) => {
