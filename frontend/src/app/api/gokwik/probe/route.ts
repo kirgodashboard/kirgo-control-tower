@@ -22,7 +22,7 @@ export async function GET() {
       p_company_id: 1,
     });
     if (error || !data) credError = error?.message ?? "No credentials found in Vault for gokwik";
-    else creds = data as { merchant_id: string; api_key: string };
+    else creds = data as { merchant_id: string; app_id: string; app_secret: string };
   } catch (e) {
     credError = e instanceof Error ? e.message : String(e);
   }
