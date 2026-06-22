@@ -87,6 +87,8 @@ export const INTEGRATION_ICONS: Record<string, string> = {
   gokwik:      "⚡",
   bank_feed:   "🏦",
   ccavenue:    "🔐",
+  meta_ads:    "📘",
+  google_ads:  "🎯",
 };
 
 // ── Credential management (settings page) ────────────────────────────────────
@@ -126,4 +128,16 @@ export const CREDENTIAL_SCHEMAS: Record<string, CredentialField[]> = {
     { key: "working_key", label: "Working Key", type: "password", placeholder: "••••••••", required: true },
   ],
   bank_feed: [],
+  meta_ads: [
+    { key: "ad_account_id", label: "Ad Account ID",  type: "text",     placeholder: "act_12345678", required: true },
+    { key: "access_token",  label: "Access Token",   type: "password", placeholder: "EAAxxxxxx…",   required: true },
+  ],
+  google_ads: [
+    { key: "customer_id",       label: "Customer ID",              type: "text",     placeholder: "123-456-7890",                    required: true },
+    { key: "developer_token",   label: "Developer Token",          type: "password", placeholder: "••••••••••••",                    required: true },
+    { key: "client_id",         label: "OAuth Client ID",          type: "text",     placeholder: "12345.apps.googleusercontent.com", required: true },
+    { key: "client_secret",     label: "Client Secret",            type: "password", placeholder: "••••••••••••",                    required: true },
+    { key: "refresh_token",     label: "Refresh Token",            type: "password", placeholder: "1//xxxx…",                        required: true },
+    { key: "login_customer_id", label: "Manager Account ID (opt)", type: "text",     placeholder: "Leave blank if direct account",   required: false },
+  ],
 };
