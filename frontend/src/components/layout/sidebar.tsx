@@ -14,7 +14,6 @@ import {
   Receipt,
   FilePlus,
   CreditCard,
-  Plug,
   X,
   Tags,
   Wallet,
@@ -24,6 +23,7 @@ import {
   SlidersHorizontal,
   Building2,
   Rss,
+  Globe,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -51,50 +51,39 @@ const navGroups = [
   {
     label: "Analytics",
     items: [
-      { href: "/dashboard",              label: "Command Center", icon: Radio,               exact: true, description: "System snapshot" },
-      { href: "/dashboard/executive",    label: "Executive",      icon: TrendingUp,           description: "Revenue & growth" },
-      { href: "/dashboard/forecasting",  label: "Forecasting",    icon: LineChart,             description: "Revenue & cash projections" },
-      { href: "/dashboard/profitability",label: "Profitability",  icon: ChartNoAxesCombined,  description: "Margins & P&L" },
-      { href: "/dashboard/customers",    label: "Customers",      icon: Users,                description: "Acquisition & retention" },
-      { href: "/dashboard/operations",   label: "Operations",     icon: Package,              description: "Shipments & logistics" },
-      { href: "/dashboard/finance",      label: "Finance",        icon: Landmark,             description: "Cash & settlements" },
-      { href: "/dashboard/bank",         label: "Bank",           icon: Building2,             description: "Bank feed & transactions" },
+      { href: "/dashboard",               label: "Command Center", icon: Radio,              exact: true },
+      { href: "/dashboard/executive",     label: "Executive",      icon: TrendingUp },
+      { href: "/dashboard/forecasting",   label: "Forecasting",    icon: LineChart },
+      { href: "/dashboard/profitability", label: "Profitability",  icon: ChartNoAxesCombined },
+      { href: "/dashboard/customers",     label: "Customers",      icon: Users },
+      { href: "/dashboard/operations",    label: "Operations",     icon: Package },
     ],
   },
   {
-    label: "Expenses",
+    label: "Finance",
     items: [
-      { href: "/dashboard/expenses",           label: "Expense Master",     icon: Receipt,    description: "Expense ledger & analytics" },
-      { href: "/dashboard/expense-entry",      label: "New Expense",        icon: FilePlus,   description: "Manual expense entry" },
-      { href: "/dashboard/bank-classification",label: "Bank Classification",icon: CreditCard, description: "Classify bank transactions" },
+      { href: "/dashboard/finance",     label: "Finance",     icon: Landmark },
+      { href: "/dashboard/bank",        label: "Bank Feed",   icon: Building2 },
+      { href: "/dashboard/expenses",    label: "Expenses",    icon: Receipt },
+      { href: "/dashboard/receivables", label: "Receivables", icon: Wallet },
     ],
   },
   {
-    label: "Inventory",
+    label: "Manage",
     items: [
-      { href: "/dashboard/inventory", label: "Stock", icon: Boxes, exact: true, description: "Stock position & reports" },
-    ],
-  },
-  {
-    label: "Orders",
-    items: [
-      { href: "/dashboard/order-classification", label: "Classification",  icon: Tags,   description: "Classify & reclassify orders" },
-      { href: "/dashboard/receivables",          label: "Receivables",     icon: Wallet, description: "Genuine COD outstanding" },
-    ],
-  },
-  {
-    label: "Data",
-    items: [
-      { href: "/dashboard/integrations",  label: "Integrations",  icon: Plug,        description: "API sync status & controls" },
-      { href: "/dashboard/data-quality",  label: "Data Quality",  icon: ShieldCheck, description: "Traffic-light health checks" },
+      { href: "/dashboard/bank-classification",  label: "Bank Classification",  icon: CreditCard },
+      { href: "/dashboard/order-classification", label: "Order Classification", icon: Tags },
+      { href: "/dashboard/expense-entry",        label: "New Expense",          icon: FilePlus },
+      { href: "/dashboard/inventory",            label: "Inventory",            icon: Boxes },
     ],
   },
   {
     label: "Settings",
     items: [
-      { href: "/settings/company",      label: "Company",      icon: Building2,          description: "Brand, tax & regional config" },
-      { href: "/settings/integrations", label: "Integrations", icon: SlidersHorizontal,  description: "Credentials & sync config" },
-      { href: "/settings/bank-feeds",   label: "Bank Feeds",   icon: Rss,                description: "Accounts & import profiles" },
+      { href: "/settings/company",      label: "Company",      icon: Globe },
+      { href: "/settings/integrations", label: "Integrations", icon: SlidersHorizontal },
+      { href: "/settings/bank-feeds",   label: "Bank Feeds",   icon: Rss },
+      { href: "/dashboard/data-quality",label: "Data Quality", icon: ShieldCheck },
     ],
   },
 ];
