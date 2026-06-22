@@ -200,6 +200,7 @@ function CredentialForm({
 function IntegrationCard({ integration }: { integration: IntegrationSummary }) {
   const queryClient = useQueryClient();
   const [configOpen, setConfigOpen] = useState(false);
+  const [toggling, setToggling] = useState(false);
   const [testing, setTesting] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
@@ -211,13 +212,21 @@ function IntegrationCard({ integration }: { integration: IntegrationSummary }) {
   const icon = INTEGRATION_ICONS[integration.integration_key] ?? "🔌";
 
   async function handleToggle() {
+    if (toggling) return;
+    setToggling(true);
     const newEnabled = !integration.is_enabled;
-    await fetch(`/api/settings/integrations/${integration.integration_key}/toggle`, {
-      method:  "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ enabled: newEnabled }),
-    });
-    await queryClient.invalidateQueries({ queryKey: ["integration-summary-settings"] });
+    try {
+      const res = await fetch(`/api/settings/integrations/${integration.integration_key}/toggle`, {
+        method:  "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ enabled: newEnabled }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) console.error("[toggle]", json.error);
+    } finally {
+      setToggling(false);
+      await queryClient.invalidateQueries({ queryKey: ["integration-summary-settings"] });
+    }
   }
 
   async function handleTest() {
@@ -294,12 +303,15 @@ function IntegrationCard({ integration }: { integration: IntegrationSummary }) {
         {/* Enable toggle */}
         <button
           onClick={handleToggle}
+          disabled={toggling}
           title={integration.is_enabled ? "Disable integration" : "Enable integration"}
-          className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+          className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
         >
-          {integration.is_enabled
-            ? <ToggleRight className="h-7 w-7 text-violet-500" />
-            : <ToggleLeft  className="h-7 w-7" />
+          {toggling
+            ? <Loader2 className="h-5 w-5 animate-spin text-violet-400" />
+            : integration.is_enabled
+              ? <ToggleRight className="h-7 w-7 text-violet-500" />
+              : <ToggleLeft  className="h-7 w-7" />
           }
         </button>
       </div>
