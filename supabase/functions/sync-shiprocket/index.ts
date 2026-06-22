@@ -81,14 +81,24 @@ async function getJwt(creds: SrCredentials): Promise<string> {
 // ─── Map Shiprocket status to our status check constraint ────────────────────
 
 function normalizeStatus(s: string): string {
-  const s2 = s.toUpperCase().replace(/\s+/g, "_");
+  const s2 = s.toUpperCase().replace(/[\s\-]+/g, "_");
+  // Shiprocket API uses "Canceled" (1-L) and raw labels — map to canonical values
+  const aliases: Record<string, string> = {
+    CANCELED:         "CANCELLED",
+    CANCEL:           "CANCELLED",
+    NEW_ORDER:        "NEW",
+    RTO_ACKNOWLEDGED: "RTO_INITIATED",
+    RETURNED:         "RTO_DELIVERED",
+    SHIPMENT_LOST:    "LOST",
+  };
+  if (aliases[s2]) return aliases[s2];
   const valid = [
     "NEW","PENDING","PICKUP_SCHEDULED","PICKED_UP",
     "IN_TRANSIT","OUT_FOR_DELIVERY","DELIVERED",
     "RTO_INITIATED","RTO_IN_TRANSIT","RTO_DELIVERED",
     "CANCELLED","LOST","DAMAGED","NDR",
   ];
-  return valid.includes(s2) ? s2 : "NEW";
+  return valid.includes(s2) ? s2 : s2; // preserve unknown values rather than silently coercing to NEW
 }
 
 function normalizePaymentMethod(s: string): "prepaid" | "cod" | null {
