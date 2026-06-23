@@ -3,10 +3,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchIntegrationSummary,
+  fetchIntegrationHealth,
   fetchRecentSyncRuns,
   fetchSyncJobs,
   triggerManualSync,
 } from "@/lib/data/integrations";
+
+export function useIntegrationHealth() {
+  return useQuery({
+    queryKey: ["integration-health"],
+    queryFn:  fetchIntegrationHealth,
+    staleTime: 60 * 1000,
+    refetchInterval: 60 * 1000,
+  });
+}
 
 export function useIntegrationSummary() {
   return useQuery({

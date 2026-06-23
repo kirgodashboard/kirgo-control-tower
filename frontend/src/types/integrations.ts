@@ -80,6 +80,52 @@ export function deriveTrafficLight(s: IntegrationSummary): TrafficLight {
   return "grey";
 }
 
+// ── Integration Health (get_integration_health RPC) ──────────────────────────
+
+export interface IntegrationHealth {
+  integration_key: string;
+  display_name: string;
+  is_configured: boolean;
+  is_authenticated: boolean;
+  is_enabled: boolean;
+  connection_status: string;
+  last_tested_at: string | null;
+  test_error: string | null;
+  total_runs: number;
+  success_runs: number;
+  failed_runs: number;
+  last_run_at: string | null;
+  last_success_at: string | null;
+  last_run_status: string | null;
+  last_error_summary: string | null;
+  sync_lag_hours: number | null;
+  total_fetched: number;
+  total_inserted: number;
+  latest_local_record_at: string | null;
+  local_record_count: number;
+}
+
+export function getHealthTrafficLight(h: IntegrationHealth): TrafficLight {
+  if (!h.is_configured || !h.is_enabled) return "grey";
+  if (h.total_runs > 0 && h.success_runs === 0) return "red";
+  if (h.success_runs > 0) {
+    if (h.sync_lag_hours !== null && h.sync_lag_hours > 48) return "amber";
+    return "green";
+  }
+  return "amber";
+}
+
+export function getHealthStatusLabel(h: IntegrationHealth): string {
+  if (!h.is_configured) return "Not Configured";
+  if (!h.is_enabled) return "Disabled";
+  if (h.total_runs > 0 && h.success_runs === 0) return "Failing";
+  if (h.success_runs > 0) {
+    if (h.sync_lag_hours !== null && h.sync_lag_hours > 48) return "Stale";
+    return "Healthy";
+  }
+  return "Never Synced";
+}
+
 export const INTEGRATION_ICONS: Record<string, string> = {
   woocommerce: "🛒",
   shiprocket:  "📦",
