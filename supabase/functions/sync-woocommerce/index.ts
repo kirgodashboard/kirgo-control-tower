@@ -158,17 +158,17 @@ async function syncCustomers(
     counters.records_fetched += customers.length;
 
     const payloads = customers.map((c) => ({
-      woocommerce_customer_id: c.id, email: c.email,
-      full_name: `${c.first_name} ${c.last_name}`.trim() || null,
-      phone: c.billing.phone || null, city: c.billing.city || null,
-      state: c.billing.state || null, pincode: c.billing.postcode || null,
+      email: c.email,
+      first_name: c.first_name || null,
+      last_name: c.last_name || null,
+      phone: c.billing?.phone || null,
       first_order_at: c.date_created,
     }));
     const { error: upsertErr } = await db.from("customers")
-      .upsert(payloads, { onConflict: "woocommerce_customer_id", ignoreDuplicates: false });
+      .upsert(payloads, { onConflict: "email", ignoreDuplicates: false });
     if (upsertErr) {
       counters.records_failed += customers.length;
-      await recordSyncError(db, runId, job.integration_key, job.entity_type, null, "BATCH_ERROR", upsertErr.message, { page });
+      await recordSyncError(db, runId, job.integration_key, job.entity_type, null, "MAPPING_ERROR", upsertErr.message, { page });
     } else {
       counters.records_updated += customers.length;
       const latest = customers.at(-1)!.date_modified;

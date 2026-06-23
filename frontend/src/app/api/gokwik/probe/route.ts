@@ -1,13 +1,56 @@
 // GET /api/gokwik/probe
-// Diagnostic endpoint — loads GoKwik credentials from Vault, makes one test
-// POST to the orders endpoint, and returns full debug info (status + body).
-// Does NOT create a sync_run. Read-only diagnostic only.
+// Diagnostic endpoint — loads GoKwik credentials from Vault, probes multiple
+// endpoint variants, and returns full debug info. Read-only diagnostic only.
 
 import { NextResponse } from "next/server";
 import { makeSupabaseAdmin } from "@/lib/supabase/server";
 
-const GK_BASE = "https://api.gokwik.co/v1";
-const ENDPOINT_URL = `${GK_BASE}/merchant/orders`;
+const ENDPOINTS_TO_TRY = [
+  { label: "v3 dashboard (current)",     url: "https://api.gokwik.co/v3/api/dashboard/orders/all" },
+  { label: "v1 merchant orders",         url: "https://api.gokwik.co/v1/merchant/orders" },
+  { label: "v2 merchant orders",         url: "https://api.gokwik.co/v2/merchant/orders" },
+  { label: "v3 merchant orders",         url: "https://api.gokwik.co/v3/merchant/orders" },
+  { label: "v3 api orders",              url: "https://api.gokwik.co/v3/api/orders" },
+  { label: "v3 dashboard orders (no /all)", url: "https://api.gokwik.co/v3/api/dashboard/orders" },
+];
+
+interface ProbeResult {
+  label:    string;
+  url:      string;
+  status:   number | null;
+  body:     string | null;
+  ok:       boolean;
+  error:    string | null;
+}
+
+async function probeEndpoint(
+  url:   string,
+  label: string,
+  creds: { merchant_id: string; app_id: string; app_secret: string },
+): Promise<ProbeResult> {
+  const today = new Date().toISOString().slice(0, 10);
+  const params = new URLSearchParams({
+    sortKey: "created_at", sortOrder: "-1",
+    start_dt: today, end_dt: today,
+    mode: "live", page: "1", pageSize: "1",
+  });
+  const fullUrl = `${url}?${params}`;
+  try {
+    const res = await fetch(fullUrl, {
+      method: "GET",
+      headers: {
+        Authorization:    `Bearer ${creds.app_id}`,
+        "X-Merchant-Id":  creds.merchant_id,
+        "X-App-Secret":   creds.app_secret,
+      },
+      signal: AbortSignal.timeout(10_000),
+    });
+    const body = await res.text();
+    return { label, url: fullUrl, status: res.status, body: body.slice(0, 500), ok: res.ok, error: null };
+  } catch (e) {
+    return { label, url: fullUrl, status: null, body: null, ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
 
 export async function GET() {
   const db = makeSupabaseAdmin();
@@ -44,51 +87,33 @@ export async function GET() {
         .maybeSingle()
     : { data: null };
 
-  // 3 — live HTTP probe (only if credentials are available)
-  let probeStatus: number | null = null;
-  let probeBody: string | null = null;
-  let probeError: string | null = null;
-
+  // 3 — probe all endpoint variants (only if credentials are available)
+  let endpointResults: ProbeResult[] = [];
   if (creds) {
-    const today = new Date().toISOString().slice(0, 10);
-    try {
-      const res = await fetch(ENDPOINT_URL, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${creds.app_id}`,
-          "Content-Type": "application/json",
-          "X-Merchant-Id": creds.merchant_id,
-          "X-App-Secret": creds.app_secret,
-        },
-        body: JSON.stringify({ from_date: today, to_date: today, page: 1, limit: 1 }),
-      });
-      probeStatus = res.status;
-      probeBody = await res.text();
-    } catch (e) {
-      probeError = e instanceof Error ? e.message : String(e);
-    }
+    endpointResults = await Promise.all(
+      ENDPOINTS_TO_TRY.map(({ label, url }) => probeEndpoint(url, label, creds!))
+    );
   }
+
+  const working = endpointResults.filter(r => r.ok);
+  const recommendation = working.length > 0
+    ? `Working endpoint found: ${working[0].url}`
+    : "No endpoint returned 2xx. Check merchant_id or contact GoKwik support.";
 
   return NextResponse.json({
     probe_timestamp: probeTimestamp,
-    config: {
-      base_url: GK_BASE,
-      endpoint_url: ENDPOINT_URL,
-      method: "POST",
-      auth_method: "Bearer <api_key> + X-Merchant-Id header",
-      auth_note: "GoKwik uses stateless API key auth — no separate /auth or /login endpoint. A 404 means the URL is wrong but auth passed.",
-    },
     credentials: {
-      loaded: !!creds,
-      merchant_id_present: !!creds?.merchant_id,
-      app_id_present: !!creds?.app_id,
-      app_secret_present: !!creds?.app_secret,
-      error: credError,
+      loaded:               !!creds,
+      merchant_id_present:  !!creds?.merchant_id,
+      app_id_present:       !!creds?.app_id,
+      app_secret_present:   !!creds?.app_secret,
+      error:                credError,
     },
-    probe: {
-      status_code: probeStatus,
-      response_body: probeBody,
-      error: probeError,
+    endpoint_probe: {
+      tested:         endpointResults.length,
+      working_count:  working.length,
+      recommendation,
+      results:        endpointResults,
     },
     last_sync_run: lastRun ?? null,
   });
