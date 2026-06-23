@@ -4,28 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  Radio,
-  TrendingUp,
-  Users,
-  Package,
-  Landmark,
-  ChartNoAxesCombined,
-  ChevronRight,
-  Receipt,
-  FilePlus,
-  CreditCard,
-  X,
-  Tags,
-  Wallet,
-  Boxes,
-  ShieldCheck,
-  LineChart,
-  SlidersHorizontal,
-  Building2,
-  Rss,
-  Globe,
+  Radio, TrendingUp, Users, Package, Landmark, ChartNoAxesCombined,
+  ChevronRight, Receipt, FilePlus, CreditCard, X, Tags, Wallet, Boxes,
+  ShieldCheck, LineChart, SlidersHorizontal, Building2, Rss, Globe,
+  ClipboardList, ShoppingCart, Truck, FileText, ArrowDownCircle,
+  ArrowUpCircle, ChevronDown,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function LogoMark() {
   const [imgError, setImgError] = useState(false);
@@ -47,46 +32,81 @@ function LogoMark() {
   );
 }
 
-const navGroups = [
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  exact?: boolean;
+}
+
+interface NavGroup {
+  label: string;
+  id: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
   {
-    label: "Analytics",
+    id: "dashboards",
+    label: "Dashboards",
     items: [
       { href: "/dashboard",               label: "Command Center", icon: Radio,              exact: true },
       { href: "/dashboard/executive",     label: "Executive",      icon: TrendingUp },
-      { href: "/dashboard/forecasting",   label: "Forecasting",    icon: LineChart },
-      { href: "/dashboard/profitability", label: "Profitability",  icon: ChartNoAxesCombined },
       { href: "/dashboard/customers",     label: "Customers",      icon: Users },
       { href: "/dashboard/operations",    label: "Operations",     icon: Package },
+      { href: "/dashboard/finance",       label: "Finance",        icon: Landmark },
+      { href: "/dashboard/forecasting",   label: "Forecasting",    icon: LineChart },
+      { href: "/dashboard/profitability", label: "Profitability",  icon: ChartNoAxesCombined },
     ],
   },
   {
-    label: "Finance",
+    id: "transactions",
+    label: "Transactions",
     items: [
-      { href: "/dashboard/finance",     label: "Finance",     icon: Landmark },
-      { href: "/dashboard/bank",        label: "Bank Feed",   icon: Building2 },
-      { href: "/dashboard/expenses",    label: "Expenses",    icon: Receipt },
-      { href: "/dashboard/receivables", label: "Receivables", icon: Wallet },
+      { href: "/dashboard/sales-register",    label: "Sales Register",    icon: ShoppingCart },
+      { href: "/dashboard/purchases",         label: "Purchases",         icon: Truck },
+      { href: "/dashboard/expenses-register", label: "Expenses Register", icon: FileText },
+      { href: "/dashboard/receipts",          label: "Receipts",          icon: ArrowDownCircle },
+      { href: "/dashboard/payments",          label: "Payments",          icon: ArrowUpCircle },
     ],
   },
   {
-    label: "Manage",
+    id: "inventory",
+    label: "Inventory",
     items: [
-      { href: "/dashboard/bank-classification",  label: "Bank Classification",  icon: CreditCard },
+      { href: "/dashboard/inventory", label: "Inventory", icon: Boxes },
+    ],
+  },
+  {
+    id: "finance",
+    label: "Finance & Bank",
+    items: [
+      { href: "/dashboard/bank",                label: "Bank Feed",           icon: Building2 },
+      { href: "/dashboard/expenses",            label: "Expenses",            icon: Receipt },
+      { href: "/dashboard/receivables",         label: "Receivables",         icon: Wallet },
+      { href: "/dashboard/bank-classification", label: "Bank Classification", icon: CreditCard },
+      { href: "/dashboard/expense-entry",       label: "New Expense",         icon: FilePlus },
+    ],
+  },
+  {
+    id: "admin",
+    label: "Administration",
+    items: [
       { href: "/dashboard/order-classification", label: "Order Classification", icon: Tags },
-      { href: "/dashboard/expense-entry",        label: "New Expense",          icon: FilePlus },
-      { href: "/dashboard/inventory",            label: "Inventory",            icon: Boxes },
-    ],
-  },
-  {
-    label: "Settings",
-    items: [
-      { href: "/settings/company",      label: "Company",      icon: Globe },
-      { href: "/settings/integrations", label: "Integrations", icon: SlidersHorizontal },
-      { href: "/settings/bank-feeds",   label: "Bank Feeds",   icon: Rss },
-      { href: "/dashboard/data-quality",label: "Data Quality", icon: ShieldCheck },
+      { href: "/dashboard/data-quality",         label: "Data Quality",         icon: ShieldCheck },
+      { href: "/dashboard/data-audit",           label: "Data Audit",           icon: ClipboardList },
+      { href: "/settings/company",               label: "Company",              icon: Globe },
+      { href: "/settings/integrations",          label: "Integrations",         icon: SlidersHorizontal },
+      { href: "/settings/bank-feeds",            label: "Bank Feeds",           icon: Rss },
     ],
   },
 ];
+
+function isGroupActive(group: NavGroup, pathname: string): boolean {
+  return group.items.some((item) =>
+    item.exact ? pathname === item.href : pathname.startsWith(item.href)
+  );
+}
 
 interface SidebarProps {
   className?: string;
@@ -95,6 +115,33 @@ interface SidebarProps {
 
 export function Sidebar({ className, onClose }: SidebarProps) {
   const pathname = usePathname();
+
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    navGroups.forEach((g) => {
+      initial[g.id] = isGroupActive(g, pathname);
+    });
+    if (!Object.values(initial).some(Boolean)) {
+      initial["dashboards"] = true;
+    }
+    return initial;
+  });
+
+  useEffect(() => {
+    setOpenGroups((prev) => {
+      const next = { ...prev };
+      navGroups.forEach((g) => {
+        if (isGroupActive(g, pathname)) {
+          next[g.id] = true;
+        }
+      });
+      return next;
+    });
+  }, [pathname]);
+
+  const toggle = (id: string) => {
+    setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   return (
     <aside
@@ -122,46 +169,61 @@ export function Sidebar({ className, onClose }: SidebarProps) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto">
-        {navGroups.map((group) => (
-          <div key={group.label}>
-            <p className="px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
-              {group.label}
-            </p>
-            <div className="space-y-0.5">
-              {group.items.map((item) => {
-                const active = item.exact
-                  ? pathname === item.href
-                  : pathname.startsWith(item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={onClose}
-                    className={cn(
-                      "group flex items-center gap-3 px-2.5 py-2 rounded-md text-sm transition-all duration-100 relative",
-                      active
-                        ? "bg-[hsl(var(--sidebar-accent))] text-foreground font-medium"
-                        : "text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent)/0.6)] hover:text-foreground"
-                    )}
-                  >
-                    {active && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full bg-violet-500" />
-                    )}
-                    <item.icon
-                      className={cn(
-                        "h-[15px] w-[15px] flex-shrink-0 transition-colors",
-                        active ? "text-violet-500" : "text-[hsl(var(--muted-foreground))] group-hover:text-foreground"
-                      )}
-                    />
-                    <span className="flex-1 text-[14px]">{item.label}</span>
-                    {active && <ChevronRight className="h-3 w-3 text-[hsl(var(--muted-foreground))]" />}
-                  </Link>
-                );
-              })}
+      <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+        {navGroups.map((group) => {
+          const isOpen = openGroups[group.id] ?? false;
+          return (
+            <div key={group.id}>
+              <button
+                onClick={() => toggle(group.id)}
+                className="w-full flex items-center justify-between px-2 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-widest text-[hsl(var(--muted-foreground))] hover:text-foreground transition-colors"
+              >
+                <span>{group.label}</span>
+                <ChevronDown
+                  className={cn(
+                    "h-3 w-3 transition-transform duration-150",
+                    isOpen ? "rotate-0" : "-rotate-90"
+                  )}
+                />
+              </button>
+
+              {isOpen && (
+                <div className="mt-0.5 mb-1 space-y-0.5">
+                  {group.items.map((item) => {
+                    const active = item.exact
+                      ? pathname === item.href
+                      : pathname.startsWith(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={onClose}
+                        className={cn(
+                          "group flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm transition-all duration-100 relative",
+                          active
+                            ? "bg-[hsl(var(--sidebar-accent))] text-foreground font-medium"
+                            : "text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent)/0.6)] hover:text-foreground"
+                        )}
+                      >
+                        {active && (
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-3.5 rounded-full bg-violet-500" />
+                        )}
+                        <item.icon
+                          className={cn(
+                            "h-[14px] w-[14px] flex-shrink-0 transition-colors",
+                            active ? "text-violet-500" : "text-[hsl(var(--muted-foreground))] group-hover:text-foreground"
+                          )}
+                        />
+                        <span className="flex-1 text-[13px]">{item.label}</span>
+                        {active && <ChevronRight className="h-3 w-3 text-[hsl(var(--muted-foreground))]" />}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Footer */}

@@ -38,8 +38,9 @@ export function ProfitabilityKpiRow({ start, end }: Props) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
       <KpiCard
-        label="Gross Revenue"
+        label="Revenue (Delivered)"
         value={formatINR(kpis.revenue_inr)}
+        subValue="cash recognised on delivery"
         icon={<TrendingUp className="h-4 w-4" />}
       />
       <KpiCard
