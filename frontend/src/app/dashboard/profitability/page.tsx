@@ -59,7 +59,7 @@ export default function ProfitabilityPage() {
   const { start, end, label } = periodDates(period);
 
   return (
-    <div className="min-h-full p-6 space-y-6">
+    <div className="min-h-full p-4 sm:p-6 space-y-6">
       <PageHeader title="Profitability" subtitle={label}>
         <PeriodTabs
           value={period}

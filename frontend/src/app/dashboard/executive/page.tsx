@@ -22,7 +22,7 @@ export default function ExecutivePage() {
   const range = period === "mtd" ? getMtdRange() : getPeriodDates(period as Period);
 
   return (
-    <div className="min-h-full p-6 space-y-6">
+    <div className="min-h-full p-4 sm:p-6 space-y-6">
       <PageHeader title="Executive Overview" subtitle={range.label}>
         <PeriodTabs value={period} options={PERIODS} onChange={(k) => setPeriod(k as Period | "mtd")} />
       </PageHeader>

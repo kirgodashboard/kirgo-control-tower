@@ -6,7 +6,17 @@ import type {
   ReceiptRow,
   PaymentRow,
   WcSyncStatus,
+  OrderDetail,
+  LogisticsRegisterRow,
+  CustomerRegisterRow,
+  CustomerOrderRow,
 } from "@/types/registers";
+
+export async function fetchOrderDetail(orderId: number): Promise<OrderDetail | null> {
+  const { data, error } = await supabase.rpc("get_order_detail", { p_order_id: orderId });
+  if (error) throw error;
+  return (data as OrderDetail) ?? null;
+}
 
 export async function fetchSalesRegister(params: {
   start?: string;
@@ -110,6 +120,54 @@ export async function fetchPaymentsRegister(params: {
   });
   if (error) throw error;
   return (data ?? []) as PaymentRow[];
+}
+
+export async function fetchLogisticsRegister(params: {
+  start?: string;
+  end?: string;
+  status?: string;
+  paymentMethod?: string;
+  courier?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<LogisticsRegisterRow[]> {
+  const { data, error } = await supabase.rpc("get_logistics_register", {
+    p_start:          params.start         ?? null,
+    p_end:            params.end           ?? null,
+    p_status:         params.status        ?? null,
+    p_payment_method: params.paymentMethod ?? null,
+    p_courier:        params.courier       ?? null,
+    p_limit:          params.limit         ?? 1000,
+    p_offset:         params.offset        ?? 0,
+  });
+  if (error) throw error;
+  return (data ?? []) as LogisticsRegisterRow[];
+}
+
+export async function fetchCustomerRegister(params: {
+  start?: string;
+  end?: string;
+  segment?: string;
+  city?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<CustomerRegisterRow[]> {
+  const { data, error } = await supabase.rpc("get_customer_register", {
+    p_start:   params.start   ?? null,
+    p_end:     params.end     ?? null,
+    p_segment: params.segment ?? null,
+    p_city:    params.city    ?? null,
+    p_limit:   params.limit   ?? 500,
+    p_offset:  params.offset  ?? 0,
+  });
+  if (error) throw error;
+  return (data ?? []) as CustomerRegisterRow[];
+}
+
+export async function fetchCustomerOrders(customerId: number): Promise<CustomerOrderRow[]> {
+  const { data, error } = await supabase.rpc("get_customer_orders", { p_customer_id: customerId });
+  if (error) throw error;
+  return (data ?? []) as CustomerOrderRow[];
 }
 
 export async function fetchWcSyncStatus(): Promise<WcSyncStatus> {

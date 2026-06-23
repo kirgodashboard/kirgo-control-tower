@@ -8,7 +8,20 @@ import {
   fetchReceiptsRegister,
   fetchPaymentsRegister,
   fetchWcSyncStatus,
+  fetchOrderDetail,
+  fetchLogisticsRegister,
+  fetchCustomerRegister,
+  fetchCustomerOrders,
 } from "@/lib/data/registers";
+
+export function useOrderDetail(orderId: number | null) {
+  return useQuery({
+    queryKey: ["order-detail", orderId],
+    queryFn: () => fetchOrderDetail(orderId!),
+    enabled: orderId !== null,
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 export function useSalesRegister(params: {
   start?: string;
@@ -74,6 +87,42 @@ export function usePaymentsRegister(params: {
     queryKey: ["payments-register", params],
     queryFn: () => fetchPaymentsRegister({ ...params, limit: 500 }),
     staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useLogisticsRegister(params: {
+  start?: string;
+  end?: string;
+  status?: string;
+  paymentMethod?: string;
+  courier?: string;
+}) {
+  return useQuery({
+    queryKey: ["logistics-register", params],
+    queryFn: () => fetchLogisticsRegister({ ...params, limit: 1000 }),
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useCustomerRegister(params: {
+  start?: string;
+  end?: string;
+  segment?: string;
+  city?: string;
+}) {
+  return useQuery({
+    queryKey: ["customer-register", params],
+    queryFn: () => fetchCustomerRegister({ ...params, limit: 500 }),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useCustomerOrders(customerId: number | null) {
+  return useQuery({
+    queryKey: ["customer-orders", customerId],
+    queryFn: () => fetchCustomerOrders(customerId!),
+    enabled: customerId !== null,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

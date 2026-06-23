@@ -64,7 +64,9 @@ const navGroups: NavGroup[] = [
     label: "Transactions",
     items: [
       { href: "/dashboard/sales-register",    label: "Sales Register",    icon: ShoppingCart },
-      { href: "/dashboard/purchases",         label: "Purchases",         icon: Truck },
+      { href: "/dashboard/logistics",          label: "Logistics Register",  icon: Truck },
+      { href: "/dashboard/customer-register", label: "Customer Register",  icon: Users },
+      { href: "/dashboard/purchases",         label: "Purchases",          icon: Package },
       { href: "/dashboard/expenses-register", label: "Expenses Register", icon: FileText },
       { href: "/dashboard/receipts",          label: "Receipts",          icon: ArrowDownCircle },
       { href: "/dashboard/payments",          label: "Payments",          icon: ArrowUpCircle },
@@ -95,6 +97,7 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/order-classification", label: "Order Classification", icon: Tags },
       { href: "/dashboard/data-quality",         label: "Data Quality",         icon: ShieldCheck },
       { href: "/dashboard/data-audit",           label: "Data Audit",           icon: ClipboardList },
+      { href: "/dashboard/system-health",        label: "System Health",        icon: Activity },
       { href: "/settings/company",               label: "Company",              icon: Globe },
       { href: "/settings/integrations",          label: "Integrations",         icon: SlidersHorizontal },
       { href: "/settings/integrations/health",   label: "Integration Health",   icon: Activity },

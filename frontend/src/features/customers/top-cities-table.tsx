@@ -6,7 +6,7 @@ import { formatINR, formatCount } from "@/lib/utils/format";
 export function TopCitiesTable() {
   const { data = [], isLoading } = useTopCities();
 
-  const maxRevenue = data.length > 0 ? Math.max(...data.map((r) => Number(r.revenue_inr))) : 1;
+  const totalRevenue = data.reduce((s, r) => s + Number(r.revenue_inr), 0) || 1;
 
   return (
     <div className="rounded-xl border border-border bg-card p-5">
@@ -37,13 +37,12 @@ export function TopCitiesTable() {
                 </tr>
               ))}
             {!isLoading && data.map((row, idx) => {
-              const pct = (Number(row.revenue_inr) / maxRevenue) * 100;
+              const pct = (Number(row.revenue_inr) / totalRevenue) * 100;
               return (
-                <tr key={`${row.city}-${row.state}`} className="border-b border-border/30 hover:bg-accent/30 transition-colors">
+                <tr key={row.city} className="border-b border-border/30 hover:bg-accent/30 transition-colors">
                   <td className="py-4 pr-4 text-[14px] text-muted-foreground">{idx + 1}</td>
                   <td className="py-4 pr-4">
                     <span className="text-[15px] font-medium text-foreground">{row.city}</span>
-                    <span className="text-[13px] text-muted-foreground ml-1.5">{row.state}</span>
                   </td>
                   <td className="py-4 pr-8">
                     <div className="flex items-center gap-2">

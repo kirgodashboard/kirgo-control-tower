@@ -8,8 +8,9 @@ import {
   useAuditRecognitionHealth,
 } from "@/lib/hooks/use-audit";
 import { useWcSyncStatus } from "@/lib/hooks/use-registers";
-import { CheckCircle2, AlertTriangle, XCircle, RefreshCw, Loader2, Clock, AlertOctagon } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, RefreshCw, Loader2, Clock, AlertOctagon, WifiOff } from "lucide-react";
 import { useQueryClient, useIsFetching } from "@tanstack/react-query";
+import { useSystemHealth } from "@/lib/hooks/use-system-health";
 
 // ─── Traffic light helpers ───────────────────────────────────────────────────
 
@@ -619,14 +620,74 @@ function SummaryBadge({ label, hook }: { label: string; hook: () => { isLoading:
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+// ─── Integration status strip ─────────────────────────────────────────────────
+
+type IntegrationState = "not_configured" | "configured" | "syncing" | "ready" | "error";
+
+function getIntegrationState(int: { is_enabled: boolean; last_run_at: string | null; last_status: string | null } | undefined): IntegrationState {
+  if (!int || !int.is_enabled) return "not_configured";
+  if (!int.last_run_at)        return "configured";
+  if (int.last_status === "running") return "syncing";
+  if (int.last_status === "failed")  return "error";
+  return "ready";
+}
+
+const STATE_CFG: Record<IntegrationState, { label: string; cls: string; dot: string }> = {
+  not_configured: { label: "Not configured", cls: "text-muted-foreground border-border",        dot: "bg-muted-foreground/30" },
+  configured:     { label: "Configured",     cls: "text-amber-500 border-amber-500/20",         dot: "bg-amber-500" },
+  syncing:        { label: "Syncing",         cls: "text-violet-400 border-violet-500/20",       dot: "bg-violet-500 animate-pulse" },
+  ready:          { label: "Ready",           cls: "text-emerald-500 border-emerald-500/20",     dot: "bg-emerald-500" },
+  error:          { label: "Error",           cls: "text-red-500 border-red-500/20",             dot: "bg-red-500" },
+};
+
+function IntegrationStatusBar() {
+  const { data: health, isLoading } = useSystemHealth();
+  if (isLoading) return null;
+
+  const integrations = health?.integrations ?? [];
+  if (integrations.length === 0) return (
+    <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+      <WifiOff className="h-4 w-4 flex-shrink-0" />
+      No integrations configured — reconciliation sections will show empty results.
+    </div>
+  );
+
+  const allNotConfigured = integrations.every((i) => !i.is_enabled);
+  return (
+    <div className="rounded-xl border border-border bg-card px-4 py-3">
+      <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2.5">Integration Status</p>
+      {allNotConfigured && (
+        <p className="text-xs text-amber-500 mb-2 flex items-center gap-1.5">
+          <AlertTriangle className="h-3.5 w-3.5" />
+          No integrations are enabled — audit sections show historical data only (CSV imports).
+        </p>
+      )}
+      <div className="flex flex-wrap gap-2">
+        {integrations.map((int) => {
+          const state = getIntegrationState(int);
+          const cfg = STATE_CFG[state];
+          return (
+            <div key={int.key} className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium ${cfg.cls}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
+              {int.name}
+              <span className="opacity-60">·</span>
+              {cfg.label}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function DataAuditPage() {
   const qc = useQueryClient();
   const auditFetching = useIsFetching({ queryKey: ["audit"] });
   const refreshAll = () => qc.invalidateQueries({ queryKey: ["audit"] });
 
   return (
-    <div className="space-y-5 p-6">
-      <div className="flex items-start justify-between">
+    <div className="space-y-5 p-4 sm:p-6">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <PageHeader
           title="Data Audit"
           subtitle="Post-integration validation — WooCommerce + Shiprocket vs Supabase. Read-only. No production data is modified."
@@ -634,7 +695,7 @@ export default function DataAuditPage() {
         <button
           onClick={refreshAll}
           disabled={auditFetching > 0}
-          className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:border-primary/40 transition-colors disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:border-primary/40 transition-colors disabled:opacity-60 flex-shrink-0"
         >
           {auditFetching > 0
             ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -643,6 +704,8 @@ export default function DataAuditPage() {
           {auditFetching > 0 ? "Refreshing…" : "Refresh All"}
         </button>
       </div>
+
+      <IntegrationStatusBar />
 
       {/* Quick status strip */}
       <div className="flex flex-wrap gap-2">

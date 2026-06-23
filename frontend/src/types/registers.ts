@@ -1,3 +1,45 @@
+export interface OrderLineItem {
+  line_item_id: number;
+  product_name: string | null;
+  sku: string | null;
+  quantity: number;
+  unit_price_inr: number;
+  line_subtotal: number;
+  line_total: number;
+}
+
+export interface OrderDetail {
+  order_id: number;
+  wc_order_id: number;
+  order_number: string;
+  ordered_at: string;
+  paid_at: string | null;
+  status: string;
+  payment_method: string | null;
+  transaction_id: string | null;
+  subtotal_inr: number;
+  discount_inr: number;
+  shipping_inr: number;
+  order_total_inr: number;
+  billing_city: string | null;
+  billing_state: string | null;
+  billing_pincode: string | null;
+  attribution_source: string | null;
+  attribution_medium: string | null;
+  attribution_campaign: string | null;
+  customer_name: string | null;
+  customer_email: string | null;
+  customer_phone: string | null;
+  classification: string;
+  shipment_status: string | null;
+  delivered_at: string | null;
+  cod_payable_inr: number | null;
+  cod_remittance_date: string | null;
+  freight_inr: number | null;
+  revenue_recognized: boolean;
+  line_items: OrderLineItem[];
+}
+
 export interface SalesRegisterRow {
   order_id: number;
   wc_order_id: number;
@@ -82,6 +124,77 @@ export interface PaymentRow {
   closing_balance: number | null;
   transaction_type: string;
   value_date: string | null;
+}
+
+export interface CustomerOrderRow {
+  order_id: number;
+  wc_order_id: number;
+  order_number: string;
+  ordered_at: string;
+  order_status: string;
+  payment_method: string | null;
+  order_total_inr: number;
+  shipment_status: string | null;
+  delivered_at: string | null;
+  classification: string;
+  revenue_recognized: boolean;
+}
+
+export interface CustomerRegisterRow {
+  customer_id: number;
+  customer_name: string;
+  email: string | null;
+  phone: string | null;
+  city: string | null;
+  state: string | null;
+  acquisition_source: string | null;
+  first_order_at: string | null;
+  last_order_at: string | null;
+  days_since_last_order: number | null;
+  total_orders: number;
+  total_revenue_inr: number;
+  avg_order_value_inr: number;
+  payment_preference: string | null;
+  is_repeat: boolean;
+  segment: "new" | "repeat" | "high_value";
+}
+
+export interface LogisticsRegisterRow {
+  shipment_id: number;
+  order_id: number;
+  wc_order_id: number;
+  order_number: string;
+  awb_code: string | null;
+  courier_company: string | null;
+  channel: string | null;
+  zone: string | null;
+  status: string | null;
+  payment_method: string | null;
+  customer_name: string | null;
+  customer_city: string | null;
+  customer_state: string | null;
+  customer_pincode: string | null;
+  sku: string | null;
+  product_qty: number | null;
+  order_total_inr: number;
+  freight_inr: number | null;
+  cod_charges_inr: number | null;
+  cod_payable_inr: number | null;
+  cod_remittance_date: string | null;
+  cod_crf_id: string | null;
+  utr_number: string | null;
+  ndr_attempts: number | null;
+  latest_ndr_reason: string | null;
+  rto_risk: string | null;
+  edd: string | null;
+  shiprocket_created_at: string | null;
+  picked_up_at: string | null;
+  shipped_at: string | null;
+  delivered_at: string | null;
+  rto_initiated_at: string | null;
+  rto_delivered_at: string | null;
+  days_to_deliver: number | null;
+  is_cod_remitted: boolean;
 }
 
 export interface WcSyncStatus {
