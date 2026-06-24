@@ -85,6 +85,43 @@ async function probeEndpoint(
   };
 }
 
+// Test token-exchange login flow: POST appid/appsecret to candidate auth
+// endpoints; a 2xx with a token field confirms GoKwik needs JWT auth.
+const AUTH_ENDPOINTS = [
+  "https://api.gokwik.co/v3/api/auth/login",
+  "https://api.gokwik.co/v3/api/dashboard/auth/login",
+  "https://api.gokwik.co/v3/api/login",
+  "https://api.gokwik.co/v1/auth/login",
+  "https://api.gokwik.co/v3/api/dashboard/login",
+];
+
+async function probeAuthExchange(creds: Creds): Promise<Array<Record<string, unknown>>> {
+  const bodies = [
+    { app_id: creds.api_key, app_secret: creds.api_secret, merchant_id: creds.merchant_id },
+    { appid: creds.api_key, appsecret: creds.api_secret, merchant_id: creds.merchant_id },
+    { api_key: creds.api_key, api_secret: creds.api_secret, merchant_id: creds.merchant_id },
+  ];
+  const results: Array<Record<string, unknown>> = [];
+  for (const url of AUTH_ENDPOINTS) {
+    for (const body of bodies) {
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(8_000),
+        });
+        const text = await res.text();
+        results.push({ url, bodyKeys: Object.keys(body).join(","), status: res.status, snippet: text.slice(0, 150) });
+        if (res.ok) return results; // found a working login
+      } catch (e) {
+        results.push({ url, status: null, error: e instanceof Error ? e.message : String(e) });
+      }
+    }
+  }
+  return results;
+}
+
 export async function GET() {
   const db = makeSupabaseAdmin();
   const probeTimestamp = new Date().toISOString();
@@ -133,6 +170,10 @@ export async function GET() {
     ? `Working endpoint found: ${working[0].url}`
     : "No endpoint returned 2xx. Check merchant_id or contact GoKwik support.";
 
+  // 4 — probe token-exchange login flow
+  const authResults = creds ? await probeAuthExchange(creds) : [];
+  const authWorking = authResults.find(r => typeof r.status === "number" && (r.status as number) >= 200 && (r.status as number) < 300);
+
   return NextResponse.json({
     probe_timestamp: probeTimestamp,
     credentials: {
@@ -141,6 +182,10 @@ export async function GET() {
       api_key_present:       !!creds?.api_key,
       api_secret_present:   !!creds?.api_secret,
       error:                credError,
+    },
+    auth_exchange: {
+      working_login: authWorking ?? null,
+      attempts:      authResults,
     },
     endpoint_probe: {
       tested:         endpointResults.length,
