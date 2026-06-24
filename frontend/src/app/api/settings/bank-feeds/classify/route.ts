@@ -1,6 +1,8 @@
 // POST /api/settings/bank-feeds/classify
 // Applies bank_classification_rules to unclassified transactions.
 
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { makeSupabaseAdmin } from "@/lib/supabase/server";
 

@@ -7,6 +7,7 @@ import { formatINR, formatCount } from "@/lib/utils/format";
 import { exportToCsv, exportToExcel } from "@/lib/utils/export";
 import { getPeriodDates } from "@/lib/utils/date-ranges";
 import { Loader2, Download, FileSpreadsheet, RefreshCw, CheckCircle2, XCircle } from "lucide-react";
+import { OrderDetailDrawer } from "@/features/sales/order-detail-drawer";
 import type { SalesRegisterRow } from "@/types/registers";
 
 const PERIODS = [
@@ -58,6 +59,7 @@ export default function SalesRegisterPage() {
   const [orderStatus, setOrderStatus] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [city, setCity] = useState("");
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
   const dateRange = getPeriodDates(period);
 
@@ -200,7 +202,11 @@ export default function SalesRegisterPage() {
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.order_id} className="border-b border-border/40 hover:bg-muted/20 last:border-0">
+                  <tr
+                    key={row.order_id}
+                    className="border-b border-border/40 hover:bg-violet-500/[0.04] last:border-0 cursor-pointer"
+                    onClick={() => setSelectedOrderId(row.order_id)}
+                  >
                     <td className="px-3 py-2 whitespace-nowrap text-muted-foreground">{fmtDate(row.ordered_at)}</td>
                     <td className="px-3 py-2 font-mono whitespace-nowrap">#{row.order_number}</td>
                     <td className="px-3 py-2 max-w-[120px]">
@@ -232,6 +238,11 @@ export default function SalesRegisterPage() {
           </div>
         )}
       </div>
+
+      <OrderDetailDrawer
+        orderId={selectedOrderId}
+        onClose={() => setSelectedOrderId(null)}
+      />
     </div>
   );
 }

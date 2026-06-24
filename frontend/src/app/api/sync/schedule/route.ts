@@ -126,8 +126,17 @@ async function handleSchedule(req: Request) {
     }
   }
 
+  // ── 3. Run the nightly Data Integrity Agent (cross-dashboard trust score) ──
+  let trust: unknown = null;
+  try {
+    const { data: trustResult } = await db.rpc("run_data_trust_check", { p_triggered_by: "cron" });
+    trust = trustResult;
+  } catch (e) {
+    console.error("[sync/schedule] data trust check failed", e);
+  }
+
   console.log(`[sync/schedule] dispatched=${results.length}`, JSON.stringify(results));
-  return NextResponse.json({ dispatched: results.length, results });
+  return NextResponse.json({ dispatched: results.length, results, trust });
 }
 
 // Vercel Cron sends GET — this is the primary entry point

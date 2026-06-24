@@ -1,6 +1,8 @@
 // PATCH /api/settings/integrations/[key]/toggle
 // Enables or disables an integration.
 
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { makeSupabaseAdmin } from "@/lib/supabase/server";
 

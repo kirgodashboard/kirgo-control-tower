@@ -117,3 +117,11 @@ export async function classifyBankTransaction(params: {
   if (error) throw error;
   return data as number;
 }
+
+export async function reconcileBankCredit(transactionId: number, type: string): Promise<void> {
+  const { error } = await supabase.rpc("reconcile_bank_credit", {
+    p_transaction_id: transactionId,
+    p_type:           type,
+  });
+  if (error) throw error;
+}

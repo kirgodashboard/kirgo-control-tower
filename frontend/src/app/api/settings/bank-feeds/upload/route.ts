@@ -2,6 +2,8 @@
 // Accepts multipart/form-data: file + bank_account_id
 // Parses CSV or XLSX, auto-detects column mapping, stores raw_rows, returns preview.
 
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { makeSupabaseAdmin } from "@/lib/supabase/server";
 import * as XLSX from "xlsx";

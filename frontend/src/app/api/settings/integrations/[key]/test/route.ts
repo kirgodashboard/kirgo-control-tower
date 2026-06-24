@@ -1,6 +1,8 @@
 // POST /api/settings/integrations/[key]/test
 // Reads credentials from Vault, attempts a real connection, updates connection_status.
 
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { makeSupabaseAdmin } from "@/lib/supabase/server";
 

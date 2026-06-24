@@ -3,6 +3,8 @@
 // Creates a sync_run row, then invokes the Supabase Edge Function async.
 // Returns immediately with { run_id } — the Edge Function runs in the background.
 
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { makeSupabaseAdmin } from "@/lib/supabase/server";
 

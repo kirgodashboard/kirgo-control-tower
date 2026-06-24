@@ -11,10 +11,10 @@ export async function fetchShipmentFunnel() {
   const { data, error } = await supabase
     .from("v_shipment_funnel")
     .select("*")
-    .order("month")
+    .order("month", { ascending: false })
     .limit(12);
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []).reverse();
 }
 
 export async function fetchCodReconciliation() {

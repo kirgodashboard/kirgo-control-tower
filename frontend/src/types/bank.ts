@@ -69,15 +69,17 @@ export interface BankTransaction {
 }
 
 export interface BankKpis {
-  total_receipts:     number;
-  total_payments:     number;
-  net_flow:           number;
-  unclassified_count: number;
-  unclassified_amount:number;
-  total_transactions: number;
-  classified_count:   number;
-  reconciliation_pct: number;
-  latest_balance:     number | null;
+  total_receipts:            number;
+  total_payments:            number;
+  net_flow:                  number;
+  unclassified_count:        number;
+  unclassified_amount:       number;
+  unclassified_debit_count:  number;
+  unclassified_credit_count: number;
+  total_transactions:        number;
+  classified_count:          number;
+  reconciliation_pct:        number;
+  latest_balance:            number | null;
 }
 
 export interface BankCashflowRow {

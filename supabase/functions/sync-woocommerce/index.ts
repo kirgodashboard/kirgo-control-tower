@@ -89,7 +89,7 @@ async function syncOrders(
 
     if (ordersErr) {
       counters.records_failed += orders.length;
-      await recordSyncError(db, runId, job.integration_key, job.entity_type, null, "BATCH_ERROR", ordersErr.message, { page });
+      await recordSyncError(db, runId, job.integration_key, job.entity_type, null, "UNKNOWN", ordersErr.message, { page });
     } else {
       counters.records_updated += orders.length;
       const orderIdMap = new Map((upsertedOrders ?? []).map((o) => [o.woocommerce_order_id, o.id]));
@@ -157,13 +157,17 @@ async function syncCustomers(
     if (customers.length === 0) break;
     counters.records_fetched += customers.length;
 
-    const payloads = customers.map((c) => ({
-      email: c.email,
-      first_name: c.first_name || null,
-      last_name: c.last_name || null,
-      phone: c.billing?.phone || null,
-      first_order_at: c.date_created,
-    }));
+    const payloadMap = new Map<string, { email: string; first_name: string | null; last_name: string | null; phone: string | null; first_order_at: string }>();
+    for (const c of customers) {
+      payloadMap.set(c.email, {
+        email: c.email,
+        first_name: c.first_name || null,
+        last_name: c.last_name || null,
+        phone: c.billing?.phone || null,
+        first_order_at: c.date_created,
+      });
+    }
+    const payloads = [...payloadMap.values()];
     const { error: upsertErr } = await db.from("customers")
       .upsert(payloads, { onConflict: "email", ignoreDuplicates: false });
     if (upsertErr) {

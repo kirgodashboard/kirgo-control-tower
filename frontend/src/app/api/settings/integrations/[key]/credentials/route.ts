@@ -2,6 +2,8 @@
 // Stores integration credentials in Supabase Vault via the store_integration_secret RPC.
 // Credentials are encrypted at rest — this route never logs or returns them.
 
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { makeSupabaseAdmin } from "@/lib/supabase/server";
 

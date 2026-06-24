@@ -2,6 +2,8 @@
 // Triggers a manual sync for all active jobs belonging to this integration.
 // Delegates per-job invocation to the same trigger pattern used by /api/sync/trigger.
 
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { makeSupabaseAdmin } from "@/lib/supabase/server";
 

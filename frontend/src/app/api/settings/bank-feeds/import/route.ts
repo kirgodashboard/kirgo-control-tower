@@ -1,6 +1,8 @@
 // POST /api/settings/bank-feeds/import
 // Reads raw_rows from bank_statement_uploads, applies column mapping, inserts transactions.
 
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { makeSupabaseAdmin } from "@/lib/supabase/server";
 import type { ColumnMapping } from "@/types/bank";

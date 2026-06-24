@@ -10,6 +10,7 @@ import {
   fetchExpenseCategories,
   fetchUnclassifiedTransactions,
   insertExpenseCategory,
+  reconcileBankCredit,
 } from "@/lib/data/expenses";
 
 export function useExpenseKpis(start: string, end: string) {
@@ -70,6 +71,18 @@ export function useUnclassifiedTransactions() {
     queryKey: ["unclassified-transactions"],
     queryFn: () => fetchUnclassifiedTransactions(50),
     staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useReconcileBankCredit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, type }: { id: number; type: string }) =>
+      reconcileBankCredit(id, type),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["unclassified-transactions"] });
+      qc.invalidateQueries({ queryKey: ["bank-kpis"] });
+    },
   });
 }
 

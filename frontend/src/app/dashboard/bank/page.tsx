@@ -15,8 +15,6 @@ import {
   useBankAccounts, useBankKpis, useBankDailyCashflow,
   useBankCategoryBreakdown, useBankTransactions, useRefreshBankData,
 } from "@/lib/hooks/use-bank";
-import { useExpenseCategories } from "@/lib/hooks/use-expenses";
-import { classifyBankTransaction } from "@/lib/data/expenses";
 import { formatINR } from "@/lib/utils/format";
 import type { BankTransaction } from "@/types/bank";
 
@@ -145,33 +143,7 @@ function CategoryChart({ accountId }: { accountId: number | null }) {
 
 // ─── Transaction Row ───────────────────────────────────────────────────────
 
-function TransactionRow({
-  tx,
-  categories,
-  onClassified,
-}: {
-  tx: BankTransaction;
-  categories: { id: number; name: string }[];
-  onClassified: () => void;
-}) {
-  const [classifying, setClassifying] = useState(false);
-  const [catId, setCatId]             = useState<number | "">("");
-  const [showForm, setShowForm]       = useState(false);
-  const [busy, setBusy]               = useState(false);
-
-  const classify = async () => {
-    if (!catId) return;
-    setBusy(true);
-    try {
-      await classifyBankTransaction({ transactionId: tx.id, categoryId: Number(catId) });
-      onClassified();
-    } catch {
-      // silent — user will see the row still unclassified
-    } finally {
-      setBusy(false);
-    }
-  };
-
+function TransactionRow({ tx }: { tx: BankTransaction }) {
   const isDebit  = (tx.withdrawal_inr ?? 0) > 0;
   const isCredit = (tx.deposit_inr ?? 0) > 0;
   const amount   = isDebit ? tx.withdrawal_inr! : tx.deposit_inr!;
@@ -206,34 +178,10 @@ function TransactionRow({
       </td>
       <td className="px-3 py-2.5">
         {tx.transaction_type === "unclassified" ? (
-          showForm ? (
-            <div className="flex items-center gap-1.5">
-              <select
-                value={catId}
-                onChange={e => setCatId(Number(e.target.value))}
-                className="h-6 text-[11px] px-1.5 rounded border border-border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-violet-500"
-              >
-                <option value="">Select…</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-              <button
-                onClick={classify}
-                disabled={!catId || busy}
-                className="h-6 px-2 rounded bg-violet-600 text-white text-[10px] font-medium disabled:opacity-50"
-              >
-                {busy ? "…" : "✓"}
-              </button>
-              <button onClick={() => setShowForm(false)} className="h-6 px-1 text-muted-foreground text-[10px]">✕</button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowForm(true)}
-              className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-400 hover:bg-amber-500/20 transition-colors"
-            >
-              <Tag className="h-2.5 w-2.5" />
-              Classify
-            </button>
-          )
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-400">
+            <Tag className="h-2.5 w-2.5" />
+            Unclassified
+          </span>
         ) : (
           <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-[10px] text-emerald-400">
             <CheckCircle className="h-2.5 w-2.5" />
@@ -252,12 +200,9 @@ export default function BankDashboardPage() {
   const [txTab, setTxTab] = useState<TxTab>("all");
 
   const { data: accounts } = useBankAccounts();
-  const { data: kpis, isLoading: kpisLoading }   = useBankKpis(selectedAccount);
-  const { data: transactions, refetch: refetchTx } = useBankTransactions(selectedAccount, txTab, 60);
-  const { data: categories } = useExpenseCategories();
-  const refresh = useRefreshBankData();
-
-  const onClassified = () => { refetchTx(); refresh(); };
+  const { data: kpis, isLoading: kpisLoading } = useBankKpis(selectedAccount);
+  const { data: transactions } = useBankTransactions(selectedAccount, txTab, 60);
+  useRefreshBankData();
 
   const KpiNum = ({ v, label, sub, color = "text-foreground" }: {
     v: string; label: string; sub?: string; color?: string;
@@ -311,10 +256,20 @@ export default function BankDashboardPage() {
             color="text-red-400"
           />
           <KpiNum
-            label="Unclassified"
-            v={`${kpis?.unclassified_count ?? 0}`}
-            sub={formatINR(kpis?.unclassified_amount ?? 0)}
-            color={(kpis?.unclassified_count ?? 0) > 0 ? "text-amber-400" : "text-foreground"}
+            label="Unclassified Debits"
+            v={`${kpis?.unclassified_debit_count ?? 0}`}
+            sub={
+              (kpis?.unclassified_credit_count ?? 0) > 0
+                ? `${kpis!.unclassified_credit_count} credits pending reconciliation`
+                : (kpis?.unclassified_debit_count ?? 0) > 0
+                  ? formatINR(kpis?.unclassified_amount ?? 0)
+                  : "all caught up"
+            }
+            color={
+              (kpis?.unclassified_debit_count ?? 0) > 0 ? "text-amber-400" :
+              (kpis?.unclassified_credit_count ?? 0) > 0 ? "text-blue-400" :
+              "text-emerald-400"
+            }
           />
           <KpiNum
             label="Reconciliation"
@@ -358,9 +313,9 @@ export default function BankDashboardPage() {
             <button className={tabCls("all")}          onClick={() => setTxTab("all")}>All</button>
             <button className={tabCls("unclassified")} onClick={() => setTxTab("unclassified")}>
               Unclassified
-              {(kpis?.unclassified_count ?? 0) > 0 && (
+              {(kpis?.unclassified_debit_count ?? 0) > 0 && (
                 <span className="ml-1.5 px-1.5 py-0.5 text-[10px] bg-amber-500/20 text-amber-400 rounded-full">
-                  {kpis!.unclassified_count}
+                  {kpis!.unclassified_debit_count}
                 </span>
               )}
             </button>
@@ -391,12 +346,7 @@ export default function BankDashboardPage() {
               </thead>
               <tbody>
                 {transactions.map(tx => (
-                  <TransactionRow
-                    key={tx.id}
-                    tx={tx}
-                    categories={categories ?? []}
-                    onClassified={onClassified}
-                  />
+                  <TransactionRow key={tx.id} tx={tx} />
                 ))}
               </tbody>
             </table>
