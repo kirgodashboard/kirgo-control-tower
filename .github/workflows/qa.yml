@@ -1,0 +1,35 @@
+name: Dashboard QA (Playwright + Visual)
+
+# Part B/C — automated browser QA against the deployed app.
+# Requires repo secrets:
+#   QA_BASE_URL                       deployed app URL
+#   VERCEL_AUTOMATION_BYPASS_SECRET   Vercel Protection-Bypass token
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 2 * * *"   # nightly, after the daily data import/audit
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: e2e
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - name: Run dashboard QA
+        env:
+          BASE_URL: ${{ secrets.QA_BASE_URL }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: npm test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-report
+          path: e2e/report
+          retention-days: 14
