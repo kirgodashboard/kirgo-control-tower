@@ -2,6 +2,8 @@
 // Diagnostic endpoint — loads GoKwik credentials from Vault, probes multiple
 // endpoint variants, and returns full debug info. Read-only diagnostic only.
 
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { makeSupabaseAdmin } from "@/lib/supabase/server";
 
@@ -26,7 +28,7 @@ interface ProbeResult {
 async function probeEndpoint(
   url:   string,
   label: string,
-  creds: { merchant_id: string; app_id: string; app_secret: string },
+  creds: { merchant_id: string; api_key: string; api_secret: string },
 ): Promise<ProbeResult> {
   const today = new Date().toISOString().slice(0, 10);
   const params = new URLSearchParams({
@@ -39,9 +41,9 @@ async function probeEndpoint(
     const res = await fetch(fullUrl, {
       method: "GET",
       headers: {
-        Authorization:    `Bearer ${creds.app_id}`,
+        Authorization:    `Bearer ${creds.api_key}`,
         "X-Merchant-Id":  creds.merchant_id,
-        "X-App-Secret":   creds.app_secret,
+        "X-App-Secret":   creds.api_secret,
       },
       signal: AbortSignal.timeout(10_000),
     });
@@ -57,7 +59,7 @@ export async function GET() {
   const probeTimestamp = new Date().toISOString();
 
   // 1 — pull credentials from Vault
-  let creds: { merchant_id: string; app_id: string; app_secret: string } | null = null;
+  let creds: { merchant_id: string; api_key: string; api_secret: string } | null = null;
   let credError: string | null = null;
   try {
     const { data, error } = await db.rpc("get_integration_secret", {
@@ -65,7 +67,7 @@ export async function GET() {
       p_company_id: 1,
     });
     if (error || !data) credError = error?.message ?? "No credentials found in Vault for gokwik";
-    else creds = data as { merchant_id: string; app_id: string; app_secret: string };
+    else creds = data as { merchant_id: string; api_key: string; api_secret: string };
   } catch (e) {
     credError = e instanceof Error ? e.message : String(e);
   }
@@ -105,8 +107,8 @@ export async function GET() {
     credentials: {
       loaded:               !!creds,
       merchant_id_present:  !!creds?.merchant_id,
-      app_id_present:       !!creds?.app_id,
-      app_secret_present:   !!creds?.app_secret,
+      api_key_present:       !!creds?.api_key,
+      api_secret_present:   !!creds?.api_secret,
       error:                credError,
     },
     endpoint_probe: {

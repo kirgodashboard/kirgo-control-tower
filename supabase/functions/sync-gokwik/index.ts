@@ -4,14 +4,23 @@ import {
   type SyncJob, type RunCounters,
 } from "../_shared/sync-base.ts";
 
-const GK_BASE = "https://api.gokwik.co/v1";
+const GK_BASE = "https://api.gokwik.co/v3/api/dashboard";
 
-interface GkCredentials { merchant_id: string; app_id: string; app_secret: string; }
+interface GkCredentials { merchant_id: string; api_key: string; api_secret: string; }
 
 interface GkOrder {
-  order_id: string; merchant_ref: string; amount: number; status: string;
-  payment_method: string; created_at: string; settled_at: string | null;
-  settlement_utr: string | null;
+  gokwik_order_id: string;
+  merchant_order_id?: string;
+  grand_total?: number;
+  amount?: number;
+  order_status?: string;
+  status?: string;
+  payment_mode?: string;
+  payment_status?: string;
+  created_at: string;
+  updated_at?: string;
+  settled_at?: string | null;
+  settlement_utr?: string | null;
 }
 
 async function loadCredentials(db: ReturnType<typeof makeSupabaseAdmin>, job: SyncJob): Promise<GkCredentials> {
@@ -30,31 +39,41 @@ async function syncGoKwikOrders(
   let page = 1, hasMore = true, watermarkTo = after;
 
   while (hasMore) {
-    const res = await fetchWithRetry(`${GK_BASE}/merchant/orders`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${creds.app_id}`, "Content-Type": "application/json", "X-Merchant-Id": creds.merchant_id, "X-App-Secret": creds.app_secret },
-      body: JSON.stringify({ from_date: after.slice(0, 10), to_date: new Date().toISOString().slice(0, 10), page, limit: job.batch_size }),
+    const params = new URLSearchParams({
+      sortKey: "created_at",
+      sortOrder: "-1",
+      start_dt: after.slice(0, 10),
+      end_dt: new Date().toISOString().slice(0, 10),
+      mode: "live",
+      page: String(page),
+      pageSize: String(job.batch_size),
+    });
+    const res = await fetchWithRetry(`${GK_BASE}/orders/all?${params}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${creds.api_key}`, "X-Merchant-Id": creds.merchant_id, "X-App-Secret": creds.api_secret },
     });
     if (!res.ok) throw new Error(`GoKwik orders API: ${res.status}`);
     const body = await res.json();
-    const orders: GkOrder[] = body.data?.orders ?? body.orders ?? [];
+    const orders: GkOrder[] = body.data?.orders ?? body.orders ?? body.data ?? [];
     if (orders.length === 0) break;
     counters.records_fetched += orders.length;
 
     for (const o of orders) {
       try {
         const { error } = await db.from("gateway_settlements").upsert({
-          gateway: "gokwik", gokwik_order_id: o.order_id,
-          settlement_amount_inr: o.amount,
+          gateway: "gokwik",
+          gokwik_order_id: o.gokwik_order_id,
+          settlement_amount_inr: o.grand_total ?? o.amount ?? 0,
           settlement_date: (o.settled_at ?? o.created_at).slice(0, 10),
-          utr_number: o.settlement_utr || null, status: o.status,
+          utr_number: o.settlement_utr || null,
+          status: o.order_status ?? o.status ?? "unknown",
         }, { onConflict: "gokwik_order_id", ignoreDuplicates: false });
         if (error) throw error;
         counters.records_updated++;
         if (o.created_at > watermarkTo) watermarkTo = o.created_at;
       } catch (err) {
         counters.records_failed++;
-        await recordSyncError(db, runId, job.integration_key, job.entity_type, o.order_id, "MAPPING_ERROR", err instanceof Error ? err.message : String(err), o);
+        await recordSyncError(db, runId, job.integration_key, job.entity_type, o.gokwik_order_id, "MAPPING_ERROR", err instanceof Error ? err.message : String(err), o);
       }
     }
 
