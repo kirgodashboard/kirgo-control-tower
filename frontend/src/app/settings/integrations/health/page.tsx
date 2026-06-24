@@ -1,6 +1,7 @@
 "use client";
 
 import { useIntegrationHealth } from "@/lib/hooks/use-integrations";
+import { useSyncHealth } from "@/lib/hooks/use-sync-health";
 import { PageHeader } from "@/components/ui/page-header";
 import {
   getHealthTrafficLight,
@@ -90,6 +91,124 @@ function SummaryStrip({ rows }: { rows: IntegrationHealth[] }) {
           <p className={`text-2xl font-bold tabular-nums ${color}`}>{value}</p>
         </div>
       ))}
+    </div>
+  );
+}
+
+// ── Sync Execution Monitor (per-job, powered by get_sync_health) ─────────────
+
+function SyncExecutionMonitor() {
+  const { data: jobs, isLoading } = useSyncHealth();
+
+  const cronScheduleLabel = "Every 4 hours (0 */4 * * *)";
+  const green = (jobs ?? []).filter(j => j.health_status === "green").length;
+  const amber = (jobs ?? []).filter(j => j.health_status === "amber").length;
+  const red   = (jobs ?? []).filter(j => j.health_status === "red").length;
+  const inactive = (jobs ?? []).filter(j => !j.is_active).length;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <h2 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+        Auto Sync Execution Monitor
+      </h2>
+
+      {/* Cron status banner */}
+      <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-5 py-3.5">
+        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-[12px] font-semibold text-emerald-400">Vercel Cron Active</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            Schedule: {cronScheduleLabel} · GET /api/sync/schedule · Retry engine: 5 min → 15 min → 60 min (max 3 attempts)
+          </p>
+        </div>
+        <div className="flex gap-4 flex-shrink-0">
+          {[
+            { label: "Healthy",   v: green,    c: "text-emerald-400" },
+            { label: "Lagging",   v: amber,    c: "text-amber-400" },
+            { label: "Failed",    v: red,      c: "text-red-400" },
+            { label: "Inactive",  v: inactive, c: "text-muted-foreground" },
+          ].map(({ label, v, c }) => (
+            <div key={label} className="text-center">
+              <p className={`text-lg font-bold tabular-nums ${c}`}>{v}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Per-job table */}
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="px-5 py-3 border-b border-border">
+          <p className="text-[13px] font-semibold text-foreground">Sync Job Execution Log</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">One row per sync job — actual run history from the database</p>
+        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-[11px]">
+              <thead className="border-b border-border bg-muted/30">
+                <tr>
+                  {["","Integration","Entity","Active","Last Run","Last Success","Last Failed","Lag","Runs 24h","✓","✗","Records"].map((h, i) => (
+                    <th key={i} className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(jobs ?? []).map((j) => {
+                  const dotColor = {
+                    green:   "bg-emerald-500",
+                    amber:   "bg-amber-500",
+                    red:     "bg-red-500",
+                    unknown: "bg-muted-foreground",
+                  }[j.health_status ?? "unknown"];
+                  const lagAlert = j.lag_hours !== null && j.lag_hours > 48;
+                  return (
+                    <tr key={j.job_id} className="border-b border-border/40 hover:bg-muted/20 last:border-0">
+                      <td className="px-3 py-2">
+                        <span className={`h-2 w-2 rounded-full inline-block flex-shrink-0 ${dotColor}`} />
+                      </td>
+                      <td className="px-3 py-2 font-medium whitespace-nowrap">{j.integration_key}</td>
+                      <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">{j.entity_type}</td>
+                      <td className="px-3 py-2">
+                        {j.is_active
+                          ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                          : <XCircle className="h-3.5 w-3.5 text-muted-foreground/40" />}
+                      </td>
+                      <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">{fmtAgo(j.last_run_at)}</td>
+                      <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">{fmtAgo(j.last_success_at)}</td>
+                      <td className={`px-3 py-2 whitespace-nowrap ${j.last_failed_at && (!j.last_success_at || j.last_failed_at > j.last_success_at) ? "text-red-400" : "text-muted-foreground"}`}>
+                        {fmtAgo(j.last_failed_at)}
+                      </td>
+                      <td className={`px-3 py-2 tabular-nums whitespace-nowrap ${lagAlert ? "text-amber-400 font-medium" : "text-muted-foreground"}`}>
+                        {fmtLag(j.lag_hours)}
+                      </td>
+                      <td className="px-3 py-2 tabular-nums text-muted-foreground">{j.runs_24h}</td>
+                      <td className="px-3 py-2 tabular-nums text-emerald-400">{j.success_24h}</td>
+                      <td className={`px-3 py-2 tabular-nums ${Number(j.failed_24h) > 0 ? "text-red-400 font-medium" : "text-muted-foreground"}`}>
+                        {j.failed_24h}
+                      </td>
+                      <td className="px-3 py-2 tabular-nums text-muted-foreground">{formatCount(j.records_last_run)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Last error detail for any failed job */}
+        {(jobs ?? []).filter(j => j.last_error && j.health_status === "red").slice(0, 3).map(j => (
+          <div key={j.job_id} className="px-5 py-3 bg-red-500/5 border-t border-red-500/20">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-red-400 mb-1 flex items-center gap-1.5">
+              <AlertTriangle className="h-3 w-3" /> {j.integration_key}/{j.entity_type}
+            </p>
+            <p className="text-[11px] text-red-300 font-mono break-all">{j.last_error}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -281,6 +400,8 @@ export default function IntegrationHealthPage() {
               </div>
             );
           })}
+
+          <SyncExecutionMonitor />
 
           {/* Audit report */}
           <div className="rounded-xl border border-border bg-card overflow-hidden">
