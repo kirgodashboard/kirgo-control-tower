@@ -165,8 +165,8 @@ export const CREDENTIAL_SCHEMAS: Record<string, CredentialField[]> = {
   ],
   gokwik: [
     { key: "merchant_id", label: "Merchant ID", type: "text",     placeholder: "e.g. 19gi0djwkg07",                required: true },
-    { key: "app_id",      label: "App ID",      type: "text",     placeholder: "32-char hex from GoKwik dashboard", required: true },
-    { key: "app_secret",  label: "App Secret",  type: "password", placeholder: "32-char hex from GoKwik dashboard", required: true },
+    { key: "api_key",     label: "API Key (App ID)",     type: "text",     placeholder: "32-char hex from GoKwik dashboard", required: true },
+    { key: "api_secret",  label: "API Secret (App Secret)", type: "password", placeholder: "32-char hex from GoKwik dashboard", required: true },
   ],
   ccavenue: [
     { key: "merchant_id", label: "Merchant ID", type: "text",     placeholder: "1234567",  required: true },
