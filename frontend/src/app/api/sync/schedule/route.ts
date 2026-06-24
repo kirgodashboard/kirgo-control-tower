@@ -135,8 +135,17 @@ async function handleSchedule(req: Request) {
     console.error("[sync/schedule] data trust check failed", e);
   }
 
+  // ── 4. Run the nightly KPI validation audit (System Audit Center) ──
+  let auditRunId: number | null = null;
+  try {
+    const { data: runId } = await db.rpc("run_kpi_audit", { p_company_id: 1, p_run_type: "nightly" });
+    auditRunId = (runId as number) ?? null;
+  } catch (e) {
+    console.error("[sync/schedule] kpi audit failed", e);
+  }
+
   console.log(`[sync/schedule] dispatched=${results.length}`, JSON.stringify(results));
-  return NextResponse.json({ dispatched: results.length, results, trust });
+  return NextResponse.json({ dispatched: results.length, results, trust, audit_run_id: auditRunId });
 }
 
 // Vercel Cron sends GET — this is the primary entry point
