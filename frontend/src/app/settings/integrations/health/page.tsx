@@ -9,6 +9,7 @@ import {
   INTEGRATION_ICONS,
   type IntegrationHealth,
 } from "@/types/integrations";
+import { useState } from "react";
 import {
   CheckCircle2, XCircle, AlertTriangle, Clock, RefreshCw,
   Loader2, Database, ArrowUpDown, Calendar, Zap,
@@ -340,8 +341,17 @@ function IntegrationCard({ h }: { h: IntegrationHealth }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function IntegrationHealthPage() {
-  const { data, isLoading, isFetching, refetch, dataUpdatedAt } = useIntegrationHealth();
+  const { data, isLoading, refetch, dataUpdatedAt } = useIntegrationHealth();
+  const { refetch: refetchSync } = useSyncHealth();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const rows = data ?? [];
+
+  async function handleRefresh() {
+    setIsRefreshing(true);
+    await Promise.all([refetch(), refetchSync()]);
+    // Keep spinner visible for at least 700ms so the user can see it
+    setTimeout(() => setIsRefreshing(false), 700);
+  }
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -357,12 +367,14 @@ export default function IntegrationHealthPage() {
             </span>
           )}
           <button
-            onClick={() => refetch()}
-            disabled={isFetching}
+            onClick={handleRefresh}
+            disabled={isRefreshing}
             className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 text-xs text-foreground hover:border-primary/40 transition-colors disabled:opacity-60"
           >
-            {isFetching ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-            Refresh
+            {isRefreshing
+              ? <Loader2 className="h-3 w-3 animate-spin" />
+              : <RefreshCw className="h-3 w-3" />}
+            {isRefreshing ? "Refreshing…" : "Refresh"}
           </button>
         </div>
       </div>
