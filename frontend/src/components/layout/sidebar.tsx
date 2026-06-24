@@ -8,7 +8,7 @@ import {
   ChevronRight, Receipt, FilePlus, CreditCard, X, Tags, Wallet, Boxes,
   ShieldCheck, LineChart, SlidersHorizontal, Building2, Rss, Globe,
   ClipboardList, ShoppingCart, Truck, FileText, ArrowDownCircle,
-  ArrowUpCircle, ChevronDown, Activity, BookMarked,
+  ArrowUpCircle, ChevronDown, Activity, BookMarked, ScanLine,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -98,6 +98,7 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/data-quality",         label: "Data Quality",         icon: ShieldCheck },
       { href: "/dashboard/data-audit",           label: "Data Audit",           icon: ClipboardList },
       { href: "/dashboard/metric-catalog",       label: "Metric Catalog",       icon: BookMarked },
+      { href: "/dashboard/system-audit-center",  label: "System Audit Center",  icon: ScanLine },
       { href: "/dashboard/system-health",        label: "System Health",        icon: Activity },
       { href: "/settings/company",               label: "Company",              icon: Globe },
       { href: "/settings/integrations",          label: "Integrations",         icon: SlidersHorizontal },

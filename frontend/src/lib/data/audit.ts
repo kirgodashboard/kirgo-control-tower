@@ -178,3 +178,48 @@ export async function fetchAuditRecognitionHealth(): Promise<AuditRevenueRecogni
   if (error) throw error;
   return data as AuditRevenueRecognitionHealth;
 }
+
+// ── System Audit Center — KPI validation engine (Part A) ──────────────
+export interface AuditRun {
+  id: number;
+  company_id: number;
+  run_type: "manual" | "nightly";
+  status: "running" | "completed" | "failed";
+  tests_run: number;
+  passed: number;
+  failed: number;
+  started_at: string;
+  completed_at: string | null;
+}
+
+export interface AuditKpiResult {
+  id: number;
+  run_id: number;
+  dashboard_name: string;
+  kpi_name: string;
+  value_type: "currency" | "percent" | "count";
+  dashboard_value: number | null;
+  calculated_value: number | null;
+  difference: number | null;
+  tolerance: number | null;
+  status: "pass" | "fail";
+  likely_cause: string | null;
+}
+
+export async function fetchAuditRuns(limit = 30): Promise<AuditRun[]> {
+  const { data, error } = await db.rpc("get_audit_runs", { p_company_id: 1, p_limit: limit });
+  if (error) throw error;
+  return (data ?? []) as AuditRun[];
+}
+
+export async function fetchAuditKpiResults(runId: number): Promise<AuditKpiResult[]> {
+  const { data, error } = await db.rpc("get_audit_results", { p_run_id: runId });
+  if (error) throw error;
+  return (data ?? []) as AuditKpiResult[];
+}
+
+export async function runKpiAudit(): Promise<number> {
+  const { data, error } = await db.rpc("run_kpi_audit", { p_company_id: 1, p_run_type: "manual" });
+  if (error) throw error;
+  return data as number;
+}
