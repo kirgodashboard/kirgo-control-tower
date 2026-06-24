@@ -42,18 +42,21 @@ export function ProfitabilityKpiRow({ start, end }: Props) {
         value={formatINR(kpis.revenue_inr)}
         subValue="cash recognised on delivery"
         icon={<TrendingUp className="h-4 w-4" />}
+        href="/dashboard/profitability"
       />
       <KpiCard
         label="COGS (Landed)"
         value={formatINR(kpis.cogs_inr)}
         subValue={`${formatPct((kpis.cogs_inr / (kpis.revenue_inr || 1)) * 100)} of revenue`}
         icon={<Package className="h-4 w-4" />}
+        href="/dashboard/profitability"
       />
       <KpiCard
         label="Gross Profit"
         value={formatINR(kpis.gross_profit_inr)}
         alert={marginAlert}
         icon={<DollarSign className="h-4 w-4" />}
+        href="/dashboard/profitability"
       />
       <KpiCard
         label="Gross Margin %"
@@ -61,6 +64,7 @@ export function ProfitabilityKpiRow({ start, end }: Props) {
         subValue={kpis.gross_margin_pct >= 35 ? "Healthy" : kpis.gross_margin_pct >= 20 ? "Below target" : "Critical"}
         alert={marginAlert}
         icon={<Percent className="h-4 w-4" />}
+        href="/dashboard/profitability"
       />
       <KpiCard
         label="Contribution Margin"
@@ -68,6 +72,7 @@ export function ProfitabilityKpiRow({ start, end }: Props) {
         subValue={`${formatPct(kpis.contribution_margin_pct)} of revenue`}
         alert={cmAlert}
         icon={<ChartColumnDecreasing className="h-4 w-4" />}
+        href="/dashboard/profitability"
       />
       <KpiCard
         label="Return Cost Impact"
@@ -75,6 +80,7 @@ export function ProfitabilityKpiRow({ start, end }: Props) {
         subValue={kpis.return_cost_inr === 0 ? "Zero returns" : "COGS lost to RTOs"}
         alert={returnAlert}
         icon={<RotateCcw className="h-4 w-4" />}
+        href="/dashboard/operations"
       />
     </div>
   );

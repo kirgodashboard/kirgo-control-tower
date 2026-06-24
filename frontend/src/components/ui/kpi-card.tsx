@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowUpRight } from "lucide-react";
+import { KpiInfo } from "@/components/ui/kpi-info";
 
 interface KpiCardProps {
   label: string;
@@ -12,6 +14,9 @@ interface KpiCardProps {
   alert?: "red" | "amber" | "green";
   className?: string;
   children?: React.ReactNode;
+  href?: string;
+  /** metric_catalog key — renders an info icon with the canonical definition */
+  metricKey?: string;
 }
 
 export function KpiCard({
@@ -25,14 +30,24 @@ export function KpiCard({
   alert,
   className,
   children,
+  href,
+  metricKey,
 }: KpiCardProps) {
   const isPositive = delta != null ? (invertDelta ? delta < 0 : delta > 0) : null;
   const isNeutral = delta === 0;
 
+  const Wrapper = href
+    ? ({ children: c }: { children: React.ReactNode }) => (
+        <Link href={href} className="block group">{c}</Link>
+      )
+    : ({ children: c }: { children: React.ReactNode }) => <>{c}</>;
+
   return (
+    <Wrapper>
     <div
       className={cn(
-        "relative rounded-xl border bg-card p-4 flex flex-col overflow-hidden card-hover min-h-[108px]",
+        "relative rounded-xl border bg-card p-4 flex flex-col overflow-hidden min-h-[108px]",
+        href ? "cursor-pointer hover:border-violet-500/40 hover:bg-accent/20 transition-colors duration-150" : "card-hover",
         alert === "red"   && "border-red-500/30 bg-red-500/[0.03]",
         alert === "amber" && "border-amber-400/30 bg-amber-400/[0.03]",
         alert === "green" && "border-emerald-500/20",
@@ -50,11 +65,15 @@ export function KpiCard({
       {alert === "amber" && <div className="absolute inset-0 bg-gradient-to-br from-amber-400/5 via-transparent to-transparent pointer-events-none" />}
       {alert === "green" && <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent pointer-events-none" />}
 
-      {/* Top row: label + icon */}
+      {/* Top row: label + icon/arrow */}
       <div className="flex items-center justify-between mb-2.5">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground leading-none">
+        <p className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground leading-none">
           {label}
+          {metricKey && <KpiInfo metricKey={metricKey} />}
         </p>
+        {href && !icon && (
+          <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-violet-400 transition-colors" />
+        )}
         {icon && (
           <span className={cn(
             "h-6 w-6 rounded-md flex items-center justify-center",
@@ -105,6 +124,7 @@ export function KpiCard({
 
       {children && <div className="mt-3">{children}</div>}
     </div>
+    </Wrapper>
   );
 }
 

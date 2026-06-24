@@ -2,10 +2,11 @@
 
 import { PageHeader } from "@/components/ui/page-header";
 import { useSystemHealth } from "@/lib/hooks/use-system-health";
+import { useDataTrustLatest, useRunDataTrustCheck } from "@/lib/hooks/use-governance";
 import { formatINR, formatCount } from "@/lib/utils/format";
 import {
   CheckCircle2, XCircle, AlertTriangle, Clock, RefreshCw,
-  Loader2, Database, Wifi, Shield, Banknote, Package,
+  Loader2, Database, Wifi, Shield, Banknote, Package, ShieldCheck,
 } from "lucide-react";
 
 function fmtDate(s: string | null) {
@@ -76,6 +77,81 @@ function MetricTile({
   );
 }
 
+function trustTone(status: string | undefined) {
+  if (status === "GREEN") return { text: "text-emerald-500", bg: "bg-emerald-500", chip: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" };
+  if (status === "AMBER") return { text: "text-amber-500", bg: "bg-amber-500", chip: "bg-amber-500/10 text-amber-500 border-amber-500/20" };
+  if (status === "RED")   return { text: "text-red-500", bg: "bg-red-500", chip: "bg-red-500/10 text-red-500 border-red-500/20" };
+  return { text: "text-muted-foreground", bg: "bg-muted-foreground/30", chip: "bg-muted text-muted-foreground border-border" };
+}
+
+function DataTrustPanel() {
+  const { data: trust, isLoading } = useDataTrustLatest();
+  const runCheck = useRunDataTrustCheck();
+  const tone = trustTone(trust?.status);
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-5">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Data Trust Score</p>
+        </div>
+        <button
+          onClick={() => runCheck.mutate()}
+          disabled={runCheck.isPending}
+          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 text-xs text-foreground hover:border-primary/40 transition-colors disabled:opacity-60"
+        >
+          {runCheck.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+          Run integrity check
+        </button>
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+      ) : !trust ? (
+        <p className="py-6 text-center text-sm text-muted-foreground">No integrity run yet. Click “Run integrity check”.</p>
+      ) : (
+        <>
+          <div className="flex items-end gap-4">
+            <p className={`text-5xl font-black leading-none tabular-nums ${tone.text}`}>{Math.round(trust.trust_score)}</p>
+            <div className="mb-1">
+              <span className={`rounded-md border px-2 py-0.5 text-xs font-medium ${tone.chip}`}>{trust.status}</span>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {trust.checks.filter((c) => c.status === "GREEN").length}/{trust.checks.length} checks passing
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
+            <div className={`h-2 rounded-full transition-all duration-500 ${tone.bg}`} style={{ width: `${trust.trust_score}%` }} />
+          </div>
+
+          <div className="mt-4 divide-y divide-border/40">
+            {trust.checks.map((c) => {
+              const ct = trustTone(c.status);
+              return (
+                <div key={c.key} className="flex items-center gap-3 py-2.5">
+                  <span className={`h-2 w-2 flex-shrink-0 rounded-full ${ct.bg}`} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-foreground">{c.label}</p>
+                    <p className="truncate text-[11px] text-muted-foreground">{c.detail}</p>
+                  </div>
+                  <div className="flex-shrink-0 text-right">
+                    <p className={`text-xs font-medium ${ct.text}`}>{c.status}</p>
+                    <p className="text-[11px] tabular-nums text-muted-foreground">{String(c.actual)}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {trust.run_at && (
+            <p className="mt-3 text-[11px] text-muted-foreground">Last run {fmtDate(trust.run_at)}</p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function SystemHealthPage() {
   const { data: health, isLoading, isFetching, refetch } = useSystemHealth();
 
@@ -108,6 +184,9 @@ export default function SystemHealthPage() {
         </div>
       ) : (
         <>
+          {/* ── Data Trust Score (Data Integrity Agent) ────────────────────── */}
+          <DataTrustPanel />
+
           {/* ── Data Quality Score ─────────────────────────────────────────── */}
           <div className="rounded-xl border border-border bg-card p-5">
             <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">Data Quality Score</p>

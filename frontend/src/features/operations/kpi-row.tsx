@@ -24,6 +24,7 @@ export function OpsKpiRow({ start, end }: Props) {
         label="Total Shipments"
         value={formatCount(data?.total_shipments)}
         icon={<Truck className="h-4 w-4" />}
+        href="/dashboard/operations"
       />
       <KpiCard
         label="Delivered"
@@ -35,11 +36,13 @@ export function OpsKpiRow({ start, end }: Props) {
           : (data?.delivery_success_pct ?? 0) < 85 ? "amber"
           : "green"
         }
+        href="/dashboard/operations"
       />
       <KpiCard
         label="In Transit"
         value={formatCount(data?.in_transit)}
         icon={<Clock className="h-4 w-4" />}
+        href="/dashboard/operations"
       />
       <KpiCard
         label="RTO"
@@ -47,21 +50,25 @@ export function OpsKpiRow({ start, end }: Props) {
         subValue={formatPct(data?.rto_rate_pct) + " of shipments"}
         icon={<RotateCcw className="h-4 w-4" />}
         alert={(data?.rto_rate_pct ?? 0) > 15 ? "red" : (data?.rto_rate_pct ?? 0) > 8 ? "amber" : undefined}
+        href="/dashboard/operations"
       />
       <KpiCard
         label="Pending"
         value={formatCount(data?.pending)}
         icon={<AlertCircle className="h-4 w-4" />}
+        href="/dashboard/operations"
       />
       <KpiCard
         label="Delivery %"
         value={formatPct(data?.delivery_success_pct)}
         icon={<TrendingUp className="h-4 w-4" />}
+        href="/dashboard/operations"
       />
       <KpiCard
         label="RTO Rate"
         value={formatPct(data?.rto_rate_pct)}
         icon={<TrendingDown className="h-4 w-4" />}
+        href="/dashboard/operations"
       />
       <KpiCard
         label="COD Outstanding"
@@ -69,6 +76,7 @@ export function OpsKpiRow({ start, end }: Props) {
         subValue={`${data?.cod_outstanding_count ?? 0} shipments`}
         icon={<DollarSign className="h-4 w-4" />}
         alert={(data?.cod_outstanding_count ?? 0) > 20 ? "amber" : undefined}
+        href="/dashboard/receivables"
       />
     </div>
   );

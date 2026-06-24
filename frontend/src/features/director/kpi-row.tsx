@@ -38,6 +38,7 @@ export function DirectorKpiRow() {
         delta={snap.revenue_mtd_change_pct}
         deltaLabel="vs last month"
         icon={<TrendingUp className="h-4 w-4" />}
+        href="/dashboard/sales-register"
       />
       <KpiCard
         label="Orders MTD"
@@ -45,12 +46,14 @@ export function DirectorKpiRow() {
         delta={snap.orders_mtd_change_pct}
         deltaLabel="vs last month"
         icon={<ShoppingCart className="h-4 w-4" />}
+        href="/dashboard/sales-register"
       />
       <KpiCard
         label="Cash Position"
         value={formatINR(snap.cash_position_inr)}
         alert={snap.cash_position_inr < 50_000 ? "red" : snap.cash_position_inr < 2_00_000 ? "amber" : undefined}
         icon={<Wallet className="h-4 w-4" />}
+        href="/dashboard/bank"
       />
       <KpiCard
         label="COD Outstanding"
@@ -58,6 +61,7 @@ export function DirectorKpiRow() {
         subValue={`${snap.cod_outstanding_count} shipments`}
         alert={snap.cod_outstanding_count > 20 ? "amber" : undefined}
         icon={<AlertTriangle className="h-4 w-4" />}
+        href="/dashboard/receivables"
       />
       <KpiCard
         label="Return Rate"
@@ -65,24 +69,28 @@ export function DirectorKpiRow() {
         alert={returnAlert}
         invertDelta
         icon={<RotateCcw className="h-4 w-4" />}
+        href="/dashboard/operations"
       />
       <KpiCard
         label="Delivery Success"
         value={formatPct(snap.delivery_success_pct)}
         alert={deliveryAlert}
         icon={<Truck className="h-4 w-4" />}
+        href="/dashboard/operations"
       />
       <KpiCard
         label="Repeat Customers"
         value={formatPct(snap.repeat_customer_pct)}
         alert={snap.repeat_customer_pct >= 30 ? "green" : undefined}
         icon={<Users className="h-4 w-4" />}
+        href="/dashboard/customers"
       />
       <KpiCard
         label="Active Alerts"
         value={alertBadgeValue}
         alert={alertBadgeAlert}
         icon={<Bell className="h-4 w-4" />}
+        href="/dashboard/data-audit"
       />
     </div>
   );

@@ -24,26 +24,31 @@ export function CustomerKpiRow({ start, end }: Props) {
         label="Total Customers"
         value={formatCount(data?.total_customers)}
         icon={<Users className="h-4 w-4" />}
+        href="/dashboard/sales-register"
       />
       <KpiCard
         label="New Customers"
         value={formatCount(data?.new_customers)}
         icon={<UserPlus className="h-4 w-4" />}
+        href="/dashboard/sales-register"
       />
       <KpiCard
         label="Repeat Customers"
         value={formatCount(data?.repeat_customers)}
         icon={<Repeat className="h-4 w-4" />}
+        href="/dashboard/sales-register"
       />
       <KpiCard
         label="Repeat Rate"
         value={formatPct(data?.repeat_purchase_pct)}
         icon={<TrendingUp className="h-4 w-4" />}
+        href="/dashboard/sales-register"
       />
       <KpiCard
         label="Avg Orders / Customer"
         value={data?.avg_orders_per_customer != null ? `${Number(data.avg_orders_per_customer).toFixed(1)}` : "—"}
         icon={<BarChart2 className="h-4 w-4" />}
+        href="/dashboard/sales-register"
       />
     </div>
   );

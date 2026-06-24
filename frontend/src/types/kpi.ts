@@ -36,6 +36,10 @@ export interface ExecutiveKpis {
   cod_pct: number;
   return_count: number;
   return_rate_pct: number;
+  rto_count?: number;
+  rto_rate_pct?: number;
+  customer_returns_count?: number;
+  customer_returns_rate_pct?: number;
 }
 
 export interface CustomerKpis {
@@ -52,6 +56,7 @@ export interface OperationsKpis {
   in_transit: number;
   rto: number;
   pending: number;
+  customer_returns?: number;
   delivery_success_pct: number;
   rto_rate_pct: number;
   cod_outstanding_inr: number;
@@ -233,7 +238,10 @@ export interface UnclassifiedTransaction {
   id: number;
   transaction_date: string;
   narration_raw: string;
-  withdrawal_inr: number;
+  withdrawal_inr: number | null;
+  deposit_inr: number | null;
+  amount_inr: number;
+  tx_direction: "debit" | "credit";
   closing_balance_inr: number | null;
   counterparty: string | null;
 }

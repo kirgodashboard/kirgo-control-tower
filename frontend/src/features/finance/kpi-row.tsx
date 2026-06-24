@@ -26,17 +26,20 @@ export function FinanceKpiRow({ start, end }: Props) {
         label="Cash Inflow"
         value={formatINR(data?.cash_inflow_inr)}
         icon={<ArrowDownCircle className="h-4 w-4 text-emerald-500" />}
+        href="/dashboard/bank"
       />
       <KpiCard
         label="Cash Outflow"
         value={formatINR(data?.cash_outflow_inr)}
         icon={<ArrowUpCircle className="h-4 w-4 text-red-400" />}
+        href="/dashboard/bank"
       />
       <KpiCard
         label="Net Cash Flow"
         value={formatINR(netCash)}
         alert={netCash < 0 ? "red" : undefined}
         icon={<Activity className="h-4 w-4" />}
+        href="/dashboard/bank"
       />
       <KpiCard
         label="Current Balance"
@@ -47,11 +50,13 @@ export function FinanceKpiRow({ start, end }: Props) {
           : undefined
         }
         icon={<Wallet className="h-4 w-4" />}
+        href="/dashboard/bank"
       />
       <KpiCard
         label="Transactions"
         value={formatCount(data?.transaction_count)}
         icon={<Hash className="h-4 w-4" />}
+        href="/dashboard/bank"
       />
     </div>
   );
