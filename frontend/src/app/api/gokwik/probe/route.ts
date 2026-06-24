@@ -25,10 +25,29 @@ interface ProbeResult {
   error:    string | null;
 }
 
+type Creds = { merchant_id: string; api_key: string; api_secret: string };
+
+// Multiple auth-header schemes to test empirically. GoKwik docs indicate
+// appid/appsecret are passed as direct headers (not Authorization: Bearer).
+function authSchemes(creds: Creds): Array<{ label: string; headers: Record<string, string> }> {
+  return [
+    { label: "Bearer + X-App-Secret (current)", headers: {
+      Authorization: `Bearer ${creds.api_key}`, "X-Merchant-Id": creds.merchant_id, "X-App-Secret": creds.api_secret } },
+    { label: "appid/appsecret headers (GoKwik docs)", headers: {
+      appid: creds.api_key, appsecret: creds.api_secret, "merchant-id": creds.merchant_id } },
+    { label: "app-id/app-secret headers", headers: {
+      "app-id": creds.api_key, "app-secret": creds.api_secret, "merchant-id": creds.merchant_id } },
+    { label: "x-app-id/x-app-secret headers", headers: {
+      "x-app-id": creds.api_key, "x-app-secret": creds.api_secret, "x-merchant-id": creds.merchant_id } },
+    { label: "KP-MERCHANT-ID + appid/appsecret", headers: {
+      appid: creds.api_key, appsecret: creds.api_secret, "KP-MERCHANT-ID": creds.merchant_id } },
+  ];
+}
+
 async function probeEndpoint(
   url:   string,
   label: string,
-  creds: { merchant_id: string; api_key: string; api_secret: string },
+  creds: Creds,
 ): Promise<ProbeResult> {
   const today = new Date().toISOString().slice(0, 10);
   const params = new URLSearchParams({
@@ -37,21 +56,33 @@ async function probeEndpoint(
     mode: "live", page: "1", pageSize: "1",
   });
   const fullUrl = `${url}?${params}`;
-  try {
-    const res = await fetch(fullUrl, {
-      method: "GET",
-      headers: {
-        Authorization:    `Bearer ${creds.api_key}`,
-        "X-Merchant-Id":  creds.merchant_id,
-        "X-App-Secret":   creds.api_secret,
-      },
-      signal: AbortSignal.timeout(10_000),
-    });
-    const body = await res.text();
-    return { label, url: fullUrl, status: res.status, body: body.slice(0, 500), ok: res.ok, error: null };
-  } catch (e) {
-    return { label, url: fullUrl, status: null, body: null, ok: false, error: e instanceof Error ? e.message : String(e) };
+
+  // Try each auth scheme; return the first non-401/403 (or the last attempt's detail)
+  const schemes = authSchemes(creds);
+  const attempts: Array<{ scheme: string; status: number | null; snippet: string | null }> = [];
+  let best: ProbeResult | null = null;
+
+  for (const { label: schemeLabel, headers } of schemes) {
+    try {
+      const res = await fetch(fullUrl, { method: "GET", headers, signal: AbortSignal.timeout(10_000) });
+      const body = await res.text();
+      attempts.push({ scheme: schemeLabel, status: res.status, snippet: body.slice(0, 120) });
+      const result: ProbeResult = {
+        label: `${label} [${schemeLabel}]`, url: fullUrl,
+        status: res.status, body: body.slice(0, 300), ok: res.ok, error: null,
+      };
+      if (res.ok) return result;             // success — stop immediately
+      if (res.status !== 401 && res.status !== 403 && !best) best = result; // non-auth error is informative
+    } catch (e) {
+      attempts.push({ scheme: schemeLabel, status: null, snippet: e instanceof Error ? e.message : String(e) });
+    }
   }
+
+  // No scheme succeeded — report all attempts in the body for diagnosis
+  return best ?? {
+    label, url: fullUrl, status: 401, ok: false, error: "All auth schemes failed",
+    body: JSON.stringify(attempts),
+  };
 }
 
 export async function GET() {
