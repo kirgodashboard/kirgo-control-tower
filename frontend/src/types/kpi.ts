@@ -110,6 +110,9 @@ export interface ProfitabilityKpis {
   contribution_margin_inr: number;
   contribution_margin_pct: number;
   return_cost_inr: number;
+  operating_expenses_inr: number;
+  net_profit_inr: number;
+  net_margin_pct: number;
 }
 
 export interface ProfitabilityTrendPoint {

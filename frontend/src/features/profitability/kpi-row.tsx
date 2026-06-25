@@ -3,7 +3,7 @@
 import { KpiCard, KpiCardSkeleton } from "@/components/ui/kpi-card";
 import { useProfitabilityKpis } from "@/lib/hooks/use-profitability";
 import { formatINR, formatPct } from "@/lib/utils/format";
-import { TrendingUp, Package, DollarSign, Percent, RotateCcw, ChartColumnDecreasing } from "lucide-react";
+import { TrendingUp, Package, DollarSign, Percent, RotateCcw, ChartColumnDecreasing, Receipt, Wallet } from "lucide-react";
 
 interface Props {
   start: string;
@@ -15,8 +15,8 @@ export function ProfitabilityKpiRow({ start, end }: Props) {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {Array.from({ length: 6 }).map((_, i) => <KpiCardSkeleton key={i} />)}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {Array.from({ length: 8 }).map((_, i) => <KpiCardSkeleton key={i} />)}
       </div>
     );
   }
@@ -35,8 +35,12 @@ export function ProfitabilityKpiRow({ start, end }: Props) {
     kpis.return_cost_inr > 50_000 ? "red" :
     kpis.return_cost_inr > 20_000 ? "amber" : undefined;
 
+  const netAlert =
+    kpis.net_margin_pct < 0 ? "red" :
+    kpis.net_margin_pct < 10 ? "amber" : undefined;
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
       <KpiCard
         label="Revenue (Delivered)"
         value={formatINR(kpis.revenue_inr)}
@@ -81,6 +85,21 @@ export function ProfitabilityKpiRow({ start, end }: Props) {
         alert={returnAlert}
         icon={<RotateCcw className="h-4 w-4" />}
         href="/dashboard/operations"
+      />
+      <KpiCard
+        label="Operating Expenses"
+        value={formatINR(kpis.operating_expenses_inr)}
+        subValue="opex — rent, salaries, ops (excl. COGS)"
+        icon={<Receipt className="h-4 w-4" />}
+        href="/dashboard/expenses"
+      />
+      <KpiCard
+        label="Net Profit"
+        value={formatINR(kpis.net_profit_inr)}
+        subValue={`${formatPct(kpis.net_margin_pct)} net margin · after opex`}
+        alert={netAlert}
+        icon={<Wallet className="h-4 w-4" />}
+        href="/dashboard/profitability"
       />
     </div>
   );

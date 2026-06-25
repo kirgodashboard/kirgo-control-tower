@@ -21,7 +21,16 @@ const PERIODS = [
 type PeriodValue = (typeof PERIODS)[number]["value"];
 
 const ORDER_STATUSES = ["completed", "processing", "cancelled", "refunded", "on-hold", "pending"];
-const PAYMENT_METHODS = ["cod", "razorpay", "prepaid", "upi", "card"];
+// value = filter sent to RPC, label = shown. "prepaid" matches all non-COD
+// gateways; the specific gateways match exactly. (Mirrors actual data:
+// ccavenue / cod / gokwik_prepaid / razorpay)
+const PAYMENT_METHODS: { value: string; label: string }[] = [
+  { value: "prepaid",        label: "Prepaid (all)" },
+  { value: "cod",            label: "COD" },
+  { value: "ccavenue",       label: "CCAvenue" },
+  { value: "gokwik_prepaid", label: "GoKwik" },
+  { value: "razorpay",       label: "Razorpay" },
+];
 
 function classificationBadge(cls: string) {
   const map: Record<string, string> = {
@@ -149,7 +158,7 @@ export default function SalesRegisterPage() {
         </select>
         <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className={selectCls}>
           <option value="">All Payment Methods</option>
-          {PAYMENT_METHODS.map((m) => <option key={m} value={m}>{m.toUpperCase()}</option>)}
+          {PAYMENT_METHODS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
         </select>
         <input
           value={city}

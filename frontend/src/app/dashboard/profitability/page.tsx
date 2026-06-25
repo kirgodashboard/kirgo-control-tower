@@ -202,11 +202,11 @@ function ProfitabilityWaterfall({ start, end }: { start: string; end: string }) 
       <div className="px-4 pt-4 pb-2">
         <p className="text-[17px] font-semibold text-foreground">P&amp;L Waterfall</p>
         <p className="text-[12px] text-muted-foreground/70 mt-0.5">
-          Revenue → Gross Profit → Contribution Margin
+          Revenue → Gross Profit → Contribution Margin → Net Profit
         </p>
       </div>
       <WaterfallRow label="Gross Revenue"        value={kpis.revenue_inr}              pct={100} />
-      <WaterfallRow label="COGS (Landed Cost)"   value={kpis.cogs_inr}                 pct={revPct(kpis.cogs_inr)}          isMinus />
+      <WaterfallRow label="COGS (Goods — Landed Cost)" value={kpis.cogs_inr}           pct={revPct(kpis.cogs_inr)}          isMinus />
       <WaterfallRow label="Gross Profit"         value={kpis.gross_profit_inr}          pct={kpis.gross_margin_pct}          isTotal />
       <WaterfallRow label="Outbound Shipping"    value={kpis.shipping_cost_inr}         pct={revPct(kpis.shipping_cost_inr)} isMinus />
       <WaterfallRow label="COD Charges"          value={kpis.cod_charges_inr}           pct={revPct(kpis.cod_charges_inr)}  isMinus />
@@ -216,6 +216,13 @@ function ProfitabilityWaterfall({ start, end }: { start: string; end: string }) 
         label="Contribution Margin"
         value={kpis.contribution_margin_inr}
         pct={kpis.contribution_margin_pct}
+        isTotal
+      />
+      <WaterfallRow label="Operating Expenses (Opex)" value={kpis.operating_expenses_inr} pct={revPct(kpis.operating_expenses_inr)} isMinus />
+      <WaterfallRow
+        label="Net Profit"
+        value={kpis.net_profit_inr}
+        pct={kpis.net_margin_pct}
         isTotal
       />
     </div>
