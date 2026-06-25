@@ -202,29 +202,36 @@ function ProfitabilityWaterfall({ start, end }: { start: string; end: string }) 
       <div className="px-4 pt-4 pb-2">
         <p className="text-[17px] font-semibold text-foreground">P&amp;L Waterfall</p>
         <p className="text-[12px] text-muted-foreground/70 mt-0.5">
-          Revenue → Gross Profit → Contribution Margin → Net Profit
+          Total Revenue → Delivered → Gross Profit → Contribution → Net Profit
         </p>
       </div>
-      <WaterfallRow label="Gross Revenue"        value={kpis.revenue_inr}              pct={100} />
+      {/* Revenue recognition bridge: ties to Executive's booked revenue */}
+      <WaterfallRow label="Total Revenue (Booked)" value={kpis.total_revenue_inr}      pct={100} isTotal />
+      <WaterfallRow label="Less: In-transit / Undelivered" value={kpis.revenue_in_transit_inr} pct={kpis.total_revenue_inr > 0 ? (kpis.revenue_in_transit_inr / kpis.total_revenue_inr) * 100 : 0} isMinus />
+      <WaterfallRow label="Recognised Revenue (Delivered)" value={kpis.delivered_revenue_inr} pct={kpis.total_revenue_inr > 0 ? (kpis.delivered_revenue_inr / kpis.total_revenue_inr) * 100 : 0} isTotal />
+      {/* P&L on recognised (delivered) basis */}
       <WaterfallRow label="COGS (Goods — Landed Cost)" value={kpis.cogs_inr}           pct={revPct(kpis.cogs_inr)}          isMinus />
       <WaterfallRow label="Gross Profit"         value={kpis.gross_profit_inr}          pct={kpis.gross_margin_pct}          isTotal />
       <WaterfallRow label="Outbound Shipping"    value={kpis.shipping_cost_inr}         pct={revPct(kpis.shipping_cost_inr)} isMinus />
       <WaterfallRow label="COD Charges"          value={kpis.cod_charges_inr}           pct={revPct(kpis.cod_charges_inr)}  isMinus />
       <WaterfallRow label="Ad Spend"             value={kpis.ad_spend_inr}              pct={revPct(kpis.ad_spend_inr)}     isMinus />
-      <WaterfallRow label="Return Cost Impact"   value={kpis.return_cost_inr}           pct={revPct(kpis.return_cost_inr)}  isMinus />
       <WaterfallRow
         label="Contribution Margin"
         value={kpis.contribution_margin_inr}
         pct={kpis.contribution_margin_pct}
         isTotal
       />
-      <WaterfallRow label="Operating Expenses (Opex)" value={kpis.operating_expenses_inr} pct={revPct(kpis.operating_expenses_inr)} isMinus />
+      <WaterfallRow label="Operating Expenses (Opex)" value={kpis.opex_inr}      pct={revPct(kpis.opex_inr)}      isMinus />
+      <WaterfallRow label="Marketing"                 value={kpis.marketing_inr} pct={revPct(kpis.marketing_inr)} isMinus />
       <WaterfallRow
-        label="Net Profit"
+        label="Net Profit (excl. capex)"
         value={kpis.net_profit_inr}
         pct={kpis.net_margin_pct}
         isTotal
       />
+      {/* Memo — capex is capital, not an operating expense */}
+      <WaterfallRow label="Memo: Capex (capitalised)" value={kpis.capex_inr} pct={revPct(kpis.capex_inr)} isMinus />
+      <WaterfallRow label="Cash after Capex" value={kpis.cash_after_capex_inr} pct={revPct(kpis.cash_after_capex_inr)} isTotal />
     </div>
   );
 }

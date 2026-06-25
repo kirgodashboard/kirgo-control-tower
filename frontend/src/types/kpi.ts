@@ -113,6 +113,14 @@ export interface ProfitabilityKpis {
   operating_expenses_inr: number;
   net_profit_inr: number;
   net_margin_pct: number;
+  // Full P&L: revenue recognition bridge + expense breakdown + capex memo
+  total_revenue_inr: number;
+  revenue_in_transit_inr: number;
+  delivered_revenue_inr: number;
+  opex_inr: number;
+  marketing_inr: number;
+  capex_inr: number;
+  cash_after_capex_inr: number;
 }
 
 export interface ProfitabilityTrendPoint {

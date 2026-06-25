@@ -31,10 +31,6 @@ export function ProfitabilityKpiRow({ start, end }: Props) {
     kpis.contribution_margin_pct < 5 ? "red" :
     kpis.contribution_margin_pct < 15 ? "amber" : undefined;
 
-  const returnAlert =
-    kpis.return_cost_inr > 50_000 ? "red" :
-    kpis.return_cost_inr > 20_000 ? "amber" : undefined;
-
   const netAlert =
     kpis.net_margin_pct < 0 ? "red" :
     kpis.net_margin_pct < 10 ? "amber" : undefined;
@@ -42,9 +38,9 @@ export function ProfitabilityKpiRow({ start, end }: Props) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
       <KpiCard
-        label="Revenue (Delivered)"
-        value={formatINR(kpis.revenue_inr)}
-        subValue="cash recognised on delivery"
+        label="Total Revenue (Booked)"
+        value={formatINR(kpis.total_revenue_inr)}
+        subValue={`${formatINR(kpis.delivered_revenue_inr)} recognised (delivered)`}
         icon={<TrendingUp className="h-4 w-4" />}
         href="/dashboard/profitability"
       />
@@ -79,12 +75,12 @@ export function ProfitabilityKpiRow({ start, end }: Props) {
         href="/dashboard/profitability"
       />
       <KpiCard
-        label="Return Cost Impact"
-        value={formatINR(kpis.return_cost_inr)}
-        subValue={kpis.return_cost_inr === 0 ? "Zero returns" : "COGS lost to RTOs"}
-        alert={returnAlert}
+        label="Cash after Capex"
+        value={formatINR(kpis.cash_after_capex_inr)}
+        subValue={`incl. ${formatINR(kpis.capex_inr)} capex`}
+        alert={kpis.cash_after_capex_inr < 0 ? "amber" : undefined}
         icon={<RotateCcw className="h-4 w-4" />}
-        href="/dashboard/operations"
+        href="/dashboard/expenses"
       />
       <KpiCard
         label="Operating Expenses"
