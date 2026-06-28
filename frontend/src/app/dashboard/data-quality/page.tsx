@@ -133,7 +133,7 @@ export default function DataQualityPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-6">
         <PageHeader title="Data Quality" subtitle="Health checks across all data domains" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[...Array(4)].map((_, i) => (
@@ -146,7 +146,7 @@ export default function DataQualityPage() {
 
   if (error || !data) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-6">
         <PageHeader title="Data Quality" subtitle="Health checks across all data domains" />
         <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-5 text-center">
           <XCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
@@ -232,7 +232,7 @@ export default function DataQualityPage() {
   const overallColors = ragColor(overallRag);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       <PageHeader
         title="Data Quality"
         subtitle="Health checks across bank, orders, inventory, and sync"

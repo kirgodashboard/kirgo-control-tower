@@ -90,7 +90,7 @@ export default function ReceiptsPage() {
     }));
 
   return (
-    <div className="flex flex-col gap-5 p-6">
+    <div className="flex flex-col gap-5 p-4 sm:p-6">
       <div className="flex items-start justify-between gap-4">
         <PageHeader
           title="Receipts"

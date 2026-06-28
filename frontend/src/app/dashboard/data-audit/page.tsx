@@ -53,9 +53,9 @@ function SectionHeader({ title, status, subtitle }: { title: string; status: Lig
 
 function KV({ label, value, highlight }: { label: string; value: React.ReactNode; highlight?: boolean }) {
   return (
-    <div className="grid grid-cols-[200px_1fr] items-baseline gap-4 border-b border-border py-2.5 last:border-0">
-      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</span>
-      <span className={`font-mono text-sm ${highlight ? "font-bold text-foreground" : "text-foreground"}`}>{value}</span>
+    <div className="flex flex-col gap-0.5 border-b border-border py-2 last:border-0 sm:grid sm:grid-cols-[180px_1fr] sm:items-baseline sm:gap-4 sm:py-2.5">
+      <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className={`font-mono text-sm break-all ${highlight ? "font-bold text-foreground" : "text-foreground"}`}>{value}</span>
     </div>
   );
 }
@@ -216,7 +216,7 @@ function ShipmentSection() {
         status={status}
         subtitle="Shiprocket rows vs matched WooCommerce orders — delivery coverage and returns"
       />
-      <div className="grid grid-cols-2 divide-x divide-border">
+      <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
         <div className="px-5 py-1">
           <p className="pb-1 pt-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Shipments</p>
           <KV label="Total rows (Shiprocket)"   value={formatCount(s.total_rows)} highlight />
@@ -465,7 +465,7 @@ function RecognitionSection() {
         status={status}
         subtitle="Verifies all P&L RPCs follow DELIVERED + delivered_at IS NOT NULL rule (BR-001)"
       />
-      <div className="grid grid-cols-2 divide-x divide-border">
+      <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
         <div className="px-5 py-1">
           <p className="pb-1 pt-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Shipment Delivery Dates</p>
           <KV label="Total DELIVERED rows"         value={formatCount(sh.total_delivered)} />

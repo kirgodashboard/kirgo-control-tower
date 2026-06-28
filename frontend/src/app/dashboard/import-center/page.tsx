@@ -36,7 +36,7 @@ export default function ImportCenterPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <PageHeader
         title="Import Center"
         subtitle="Upload settlement files manually, or let the email inbox ingest them automatically"
