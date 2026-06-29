@@ -7,7 +7,7 @@ import {
   Radio, TrendingUp, Users, Package, Landmark, ChartNoAxesCombined,
   ChevronRight, Receipt, X, Wallet, Boxes,
   ShieldCheck, LineChart, Building2, Rss, Globe,
-  ShoppingCart, Truck, FileText, ArrowDownCircle,
+  ShoppingCart, Truck, ArrowDownCircle,
   ArrowUpCircle, ChevronDown, BookMarked, Inbox,
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -67,7 +67,6 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/logistics",         label: "Logistics Register", icon: Truck },
       { href: "/dashboard/customer-register", label: "Customer Register",  icon: Users },
       { href: "/dashboard/purchases",         label: "Purchases",          icon: Package },
-      { href: "/dashboard/expenses-register", label: "Expenses Register",  icon: FileText },
       { href: "/dashboard/receipts",          label: "Receipts",           icon: ArrowDownCircle },
       { href: "/dashboard/payments",          label: "Payments",           icon: ArrowUpCircle },
     ],
