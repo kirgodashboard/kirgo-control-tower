@@ -22,9 +22,7 @@ const ROUTES = [
   { path: "/dashboard/bank",              label: "Bank Feed" },
   { path: "/dashboard/receipts",          label: "Receipts" },
   { path: "/dashboard/payments",          label: "Payments" },
-  { path: "/dashboard/bank-classification", label: "Classify Transactions" },
   { path: "/dashboard/expenses",          label: "Expenses" },
-  { path: "/dashboard/expense-entry",     label: "New Expense" },
   { path: "/dashboard/receivables",       label: "Receivables" },
   // Administration
   { path: "/dashboard/order-classification", label: "Order Classification" },
@@ -33,7 +31,6 @@ const ROUTES = [
   { path: "/dashboard/import-center",     label: "Import Center" },
   // Settings
   { path: "/settings/company",            label: "Company Settings" },
-  { path: "/settings/integrations",       label: "Integrations" },
   { path: "/settings/bank-feeds",         label: "Bank Feed Settings" },
 ];
 
@@ -43,6 +40,8 @@ const REDIRECT_ROUTES = [
   { path: "/dashboard/data-audit",            redirectsTo: "/dashboard/health" },
   { path: "/dashboard/system-health",         redirectsTo: "/dashboard/health" },
   { path: "/dashboard/system-audit-center",   redirectsTo: "/dashboard/health" },
+  { path: "/dashboard/bank-classification",   redirectsTo: "/dashboard/bank" },
+  { path: "/dashboard/expense-entry",         redirectsTo: "/dashboard/expenses" },
 ];
 
 for (const route of ROUTES) {

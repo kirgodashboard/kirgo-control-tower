@@ -5,7 +5,10 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid,
 } from "recharts";
-import { Download, TrendingUp, TrendingDown, Wallet, Store, AlertCircle } from "lucide-react";
+import {
+  Download, TrendingUp, TrendingDown, Wallet, Store, AlertCircle,
+  FilePlus, X, CheckCircle,
+} from "lucide-react";
 import { PageHeader, PeriodTabs } from "@/components/ui/page-header";
 import {
   useExpenseKpis,
@@ -15,6 +18,7 @@ import {
   useTopVendors,
   useExpenseCategories,
 } from "@/lib/hooks/use-expenses";
+import { insertExpense } from "@/lib/data/expenses";
 import { formatINR } from "@/lib/utils/format";
 import { getPeriodDates, getMtdRange } from "@/lib/utils/date-ranges";
 import type { Period } from "@/types/chart";
@@ -27,6 +31,181 @@ const PERIODS = [
   { key: "6m",  label: "6 Months" },
   { key: "all", label: "All Time" },
 ];
+
+const PAYMENT_METHODS = [
+  { value: "upi",           label: "UPI" },
+  { value: "bank_transfer", label: "Bank Transfer" },
+  { value: "debit_card",   label: "Debit Card" },
+  { value: "credit_card",  label: "Credit Card" },
+  { value: "paypal",       label: "PayPal" },
+  { value: "swift",        label: "SWIFT" },
+];
+
+const STATUS_OPTIONS = [
+  { value: "draft",    label: "Draft" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+];
+
+const EMPTY_FORM = {
+  expense_date:   "",
+  category_id:    "",
+  description:    "",
+  amount_inr:     "",
+  vendor:         "",
+  payment_method: "",
+  notes:          "",
+  attachment_url: "",
+  status:         "draft",
+};
+type FormState = typeof EMPTY_FORM;
+
+const inputCls =
+  "w-full h-9 px-3 rounded-md border border-border bg-background text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-violet-500 transition-colors";
+const selectCls =
+  "w-full h-9 px-3 rounded-md border border-border bg-background text-[13px] text-foreground focus:outline-none focus:ring-1 focus:ring-violet-500 transition-colors";
+
+function FormField({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-[12px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+        {label}{required && <span className="text-red-400 ml-0.5">*</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function NewExpenseForm({ categories, onClose }: { categories: { id: number; name: string }[]; onClose: () => void }) {
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const set = (field: keyof FormState) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+      setForm(prev => ({ ...prev, [field]: e.target.value }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.expense_date || !form.category_id || !form.description || !form.amount_inr) {
+      setResult({ ok: false, message: "Date, category, description, and amount are required." });
+      return;
+    }
+    const amount = parseFloat(form.amount_inr);
+    if (isNaN(amount) || amount <= 0) {
+      setResult({ ok: false, message: "Amount must be a positive number." });
+      return;
+    }
+    setSubmitting(true);
+    setResult(null);
+    try {
+      const id = await insertExpense({
+        expenseDate:   form.expense_date,
+        categoryId:    Number(form.category_id),
+        description:   form.description,
+        amountInr:     amount,
+        vendor:        form.vendor        || undefined,
+        paymentMethod: form.payment_method || undefined,
+        notes:         form.notes         || undefined,
+        attachmentUrl: form.attachment_url || undefined,
+        status:        form.status,
+      });
+      setResult({ ok: true, message: `Expense #${id} saved as ${form.status}.` });
+      setForm(EMPTY_FORM);
+    } catch (err: unknown) {
+      setResult({ ok: false, message: `Failed to save: ${err instanceof Error ? err.message : "Unknown error"}` });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-violet-500/30 bg-card p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <FilePlus className="h-4 w-4 text-violet-400" />
+          <p className="text-[14px] font-semibold text-foreground">New Expense</p>
+        </div>
+        <button onClick={onClose} className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Expense Date" required>
+            <input type="date" value={form.expense_date} onChange={set("expense_date")} className={inputCls} required />
+          </FormField>
+          <FormField label="Amount (₹)" required>
+            <input type="number" min="0.01" step="0.01" value={form.amount_inr} onChange={set("amount_inr")} placeholder="0.00" className={inputCls} required />
+          </FormField>
+        </div>
+
+        <FormField label="Expense Category" required>
+          <select value={form.category_id} onChange={set("category_id")} className={selectCls} required>
+            <option value="">Select category...</option>
+            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </FormField>
+
+        <FormField label="Description" required>
+          <input type="text" value={form.description} onChange={set("description")} placeholder="Brief description of the expense" className={inputCls} required />
+        </FormField>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Vendor">
+            <input type="text" value={form.vendor} onChange={set("vendor")} placeholder="Vendor or payee name" className={inputCls} />
+          </FormField>
+          <FormField label="Payment Method">
+            <select value={form.payment_method} onChange={set("payment_method")} className={selectCls}>
+              <option value="">Select method...</option>
+              {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+            </select>
+          </FormField>
+        </div>
+
+        <FormField label="Notes">
+          <textarea value={form.notes} onChange={set("notes")} placeholder="Additional notes..." rows={2}
+            className="w-full px-3 py-2 rounded-md border border-border bg-background text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-violet-500 transition-colors resize-none" />
+        </FormField>
+
+        <div className="flex items-center gap-2">
+          {STATUS_OPTIONS.map(s => (
+            <button key={s.value} type="button" onClick={() => setForm(prev => ({ ...prev, status: s.value }))}
+              className={`flex-1 h-9 rounded-md text-[12px] font-semibold border transition-colors ${
+                form.status === s.value
+                  ? s.value === "approved" ? "bg-emerald-500/10 border-emerald-500 text-emerald-400"
+                    : s.value === "rejected" ? "bg-red-500/10 border-red-500 text-red-400"
+                    : "bg-violet-500/10 border-violet-500 text-violet-400"
+                  : "border-border text-muted-foreground hover:text-foreground hover:bg-accent"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+
+        {result && (
+          <div className={`flex items-center gap-2.5 p-3 rounded-md text-[13px] ${result.ok ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"}`}>
+            {result.ok ? <CheckCircle className="h-4 w-4 flex-shrink-0" /> : <AlertCircle className="h-4 w-4 flex-shrink-0" />}
+            {result.message}
+          </div>
+        )}
+
+        <div className="flex gap-2">
+          <button type="submit" disabled={submitting}
+            className="flex-1 h-10 rounded-md bg-violet-600 hover:bg-violet-700 text-white text-[13px] font-semibold transition-colors disabled:opacity-50">
+            {submitting ? "Saving..." : "Save Expense"}
+          </button>
+          <button type="button" onClick={onClose}
+            className="h-10 px-4 rounded-md border border-border text-[13px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
 
 // ── Sort helpers ──────────────────────────────────────────────────────────────
 
@@ -460,13 +639,30 @@ function ExpenseListTable({
 
 export default function ExpensesPage() {
   const [period, setPeriod] = useState<Period | "mtd">("30d");
+  const [showForm, setShowForm] = useState(false);
   const range = period === "mtd" ? getMtdRange() : getPeriodDates(period as Period);
+  const { data: categories = [] } = useExpenseCategories();
 
   return (
     <div className="min-h-full p-4 sm:p-6 space-y-6">
       <PageHeader title="Expense Master" subtitle={range.label}>
-        <PeriodTabs value={period} options={PERIODS} onChange={(k) => setPeriod(k as Period | "mtd")} />
+        <div className="flex items-center gap-2">
+          <PeriodTabs value={period} options={PERIODS} onChange={(k) => setPeriod(k as Period | "mtd")} />
+          <button
+            onClick={() => setShowForm(v => !v)}
+            className={`flex items-center gap-1.5 h-8 px-3 rounded-md text-[12px] font-semibold border transition-colors ${
+              showForm
+                ? "bg-violet-600 border-violet-600 text-white"
+                : "border-border text-muted-foreground hover:text-foreground hover:bg-accent"
+            }`}
+          >
+            <FilePlus className="h-3.5 w-3.5" />
+            New Expense
+          </button>
+        </div>
       </PageHeader>
+
+      {showForm && <NewExpenseForm categories={categories} onClose={() => setShowForm(false)} />}
 
       <ExpenseKpiRow start={range.start} end={range.end} />
 

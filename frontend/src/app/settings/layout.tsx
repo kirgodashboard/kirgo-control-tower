@@ -5,17 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  Building2, Plug, Rss, Users, Bell, ShieldCheck, Server,
+  Building2, Rss, Users, Bell,
 } from "lucide-react";
 
 const NAV = [
-  { href: "/settings/company",       label: "Company",       icon: Building2  },
-  { href: "/settings/integrations",  label: "Integrations",  icon: Plug       },
-  { href: "/settings/bank-feeds",    label: "Bank Feeds",    icon: Rss        },
-  { href: "/settings/users",         label: "Users & Roles", icon: Users      },
-  { href: "/settings/notifications", label: "Notifications", icon: Bell       },
-  { href: "/settings/data-quality",  label: "Data Quality",  icon: ShieldCheck},
-  { href: "/settings/system",        label: "System",        icon: Server     },
+  { href: "/settings/company",       label: "Company",       icon: Building2 },
+  { href: "/settings/bank-feeds",    label: "Bank Feeds",    icon: Rss       },
+  { href: "/settings/users",         label: "Users & Roles", icon: Users     },
+  { href: "/settings/notifications", label: "Notifications", icon: Bell      },
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

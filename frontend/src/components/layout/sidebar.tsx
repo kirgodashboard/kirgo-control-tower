@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Radio, TrendingUp, Users, Package, Landmark, ChartNoAxesCombined,
-  ChevronRight, Receipt, FilePlus, CreditCard, X, Tags, Wallet, Boxes,
-  ShieldCheck, LineChart, SlidersHorizontal, Building2, Rss, Globe,
+  ChevronRight, Receipt, X, Tags, Wallet, Boxes,
+  ShieldCheck, LineChart, Building2, Rss, Globe,
   ShoppingCart, Truck, FileText, ArrowDownCircle,
   ArrowUpCircle, ChevronDown, BookMarked, Inbox,
 } from "lucide-react";
@@ -81,14 +81,12 @@ const navGroups: NavGroup[] = [
     id: "finance",
     label: "Finance & Bank",
     items: [
-      { href: "/dashboard/bank",                label: "Bank Feed",           icon: Building2 },
-      { href: "/dashboard/receipts",            label: "Receipts (Credits)",  icon: ArrowDownCircle },
-      { href: "/dashboard/payments",            label: "Payments (Debits)",   icon: ArrowUpCircle },
-      { href: "/dashboard/bank-classification", label: "Classify Transactions", icon: CreditCard },
-      { href: "/dashboard/expenses",            label: "Expenses",            icon: Receipt },
-      { href: "/dashboard/expense-entry",       label: "New Expense",         icon: FilePlus },
-      { href: "/dashboard/receivables",         label: "Receivables",         icon: Wallet },
-      { href: "/settings/bank-feeds",           label: "Bank Feed Settings",  icon: Rss },
+      { href: "/dashboard/bank",      label: "Bank Feed",          icon: Building2 },
+      { href: "/dashboard/receipts", label: "Receipts (Credits)", icon: ArrowDownCircle },
+      { href: "/dashboard/payments", label: "Payments (Debits)",  icon: ArrowUpCircle },
+      { href: "/dashboard/expenses", label: "Expenses",           icon: Receipt },
+      { href: "/dashboard/receivables", label: "Receivables",     icon: Wallet },
+      { href: "/settings/bank-feeds",   label: "Bank Feed Settings", icon: Rss },
     ],
   },
   {
@@ -99,8 +97,7 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/health",               label: "Health & Alerts",      icon: ShieldCheck },
       { href: "/dashboard/metric-catalog",       label: "Metric Catalog",       icon: BookMarked },
       { href: "/dashboard/import-center",        label: "Import Center",        icon: Inbox },
-      { href: "/settings/company",               label: "Company",              icon: Globe },
-      { href: "/settings/integrations",          label: "Integrations",         icon: SlidersHorizontal },
+      { href: "/settings/company",               label: "Company & Settings",   icon: Globe },
     ],
   },
 ];
