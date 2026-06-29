@@ -111,6 +111,17 @@ function OrderRow({
         {row.payment_method}
       </td>
       <td className="px-3 py-2">
+        {row.shipment_status === "DELIVERED" ? (
+          <span className="text-[10px] font-medium text-emerald-500">Delivered</span>
+        ) : row.shipment_status === "none" || !row.shipment_status ? (
+          <span className="text-[10px] font-medium text-muted-foreground">No shipment</span>
+        ) : row.shipment_status === "CANCELED" ? (
+          <span className="text-[10px] font-medium text-red-400">Cancelled</span>
+        ) : (
+          <span className="text-[10px] font-medium text-amber-400">{row.shipment_status}</span>
+        )}
+      </td>
+      <td className="px-3 py-2">
         <select
           value={displayClass}
           onChange={(e) => onChange(e.target.value as OrderClass)}
@@ -146,12 +157,13 @@ type SavedMap   = Record<number, boolean>;
 
 export default function OrderClassificationPage() {
   const [filter, setFilter] = useState<string | null>(null);
+  const [undeliveredOnly, setUndeliveredOnly] = useState(false);
   const [pending, setPending] = useState<PendingMap>({});
   const [saving,  setSaving]  = useState<SavingMap>({});
   const [saved,   setSaved]   = useState<SavedMap>({});
 
   const { data: summary = [], isLoading: sumLoading } = useClassificationSummary();
-  const { data: orders  = [], isLoading: ordersLoading, refetch } = useOrdersByClassification(filter, 100);
+  const { data: orders  = [], isLoading: ordersLoading, refetch } = useOrdersByClassification(filter, 200, undeliveredOnly);
   const classifyMutation = useClassifyOrder();
   const autoMutation     = useAutoClassify();
 
@@ -186,15 +198,16 @@ export default function OrderClassificationPage() {
 
   const unclassifiedCount = summaryMap["unclassified"]?.order_count ?? 0;
   const FILTER_TABS = [
-    { label: "All", value: null },
+    { label: "All", value: null, undelivered: false },
+    { label: "Not Delivered", value: null, undelivered: true },
     ...(unclassifiedCount > 0
-      ? [{ label: `Unclassified (${unclassifiedCount})`, value: "unclassified" }]
+      ? [{ label: `Unclassified (${unclassifiedCount})`, value: "unclassified", undelivered: false }]
       : []),
-    { label: "COD pending", value: "cod_pending" },
-    { label: "Influencer promo", value: "influencer_promotion" },
-    { label: "Brand seeding", value: "brand_seeding" },
-    { label: "Paid sale", value: "paid_sale" },
-    { label: "Cancelled", value: "cancelled" },
+    { label: "COD pending", value: "cod_pending", undelivered: false },
+    { label: "Influencer promo", value: "influencer_promotion", undelivered: false },
+    { label: "Brand seeding", value: "brand_seeding", undelivered: false },
+    { label: "Paid sale", value: "paid_sale", undelivered: false },
+    { label: "Cancelled", value: "cancelled", undelivered: false },
   ];
 
   const promoValue = (summaryMap["influencer_promotion"]?.total_value_inr ?? 0)
@@ -285,23 +298,34 @@ export default function OrderClassificationPage() {
 
       {/* Filter tabs */}
       <div className="flex gap-1.5 flex-wrap">
-        {FILTER_TABS.map((tab) => (
-          <button
-            key={tab.label}
-            onClick={() => setFilter(tab.value)}
-            className={cn(
-              "px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors",
-              filter === tab.value
-                ? "bg-violet-600 text-white"
-                : "border border-border text-muted-foreground hover:text-foreground hover:bg-accent"
-            )}
-          >
-            {tab.label}
-            {tab.value && summaryMap[tab.value] && (
-              <span className="ml-1.5 opacity-70">({summaryMap[tab.value].order_count})</span>
-            )}
-          </button>
-        ))}
+        {FILTER_TABS.map((tab) => {
+          const isActive = tab.undelivered
+            ? undeliveredOnly
+            : !undeliveredOnly && filter === tab.value;
+          return (
+            <button
+              key={tab.label}
+              onClick={() => {
+                setFilter(tab.value);
+                setUndeliveredOnly(tab.undelivered);
+                setPending({});
+              }}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors",
+                isActive
+                  ? tab.undelivered
+                    ? "bg-amber-500 text-white"
+                    : "bg-violet-600 text-white"
+                  : "border border-border text-muted-foreground hover:text-foreground hover:bg-accent"
+              )}
+            >
+              {tab.label}
+              {!tab.undelivered && tab.value && summaryMap[tab.value] && (
+                <span className="ml-1.5 opacity-70">({summaryMap[tab.value].order_count})</span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Orders table */}
@@ -335,6 +359,7 @@ export default function OrderClassificationPage() {
                   <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Date</th>
                   <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Amount</th>
                   <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Payment</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Delivery</th>
                   <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Classification</th>
                   <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"></th>
                 </tr>
@@ -342,12 +367,12 @@ export default function OrderClassificationPage() {
               <tbody>
                 {orders.map((row) => (
                   <OrderRow
-                    key={row.order_id}
+                    key={row.id}
                     row={row}
-                    pendingClass={pending[row.order_id] ?? null}
-                    onChange={(cls) => handleChange(row.order_id, cls)}
-                    isSaving={!!saving[row.order_id]}
-                    savedRecently={!!saved[row.order_id]}
+                    pendingClass={pending[row.id] ?? null}
+                    onChange={(cls) => handleChange(row.id, cls)}
+                    isSaving={!!saving[row.id]}
+                    savedRecently={!!saved[row.id]}
                   />
                 ))}
               </tbody>

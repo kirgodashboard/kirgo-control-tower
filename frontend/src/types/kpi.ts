@@ -360,7 +360,7 @@ export interface ClassificationSummaryItem {
 }
 
 export interface OrderClassificationRow {
-  order_id: number;
+  id: number;
   woocommerce_order_id: number;
   customer_name: string;
   ordered_at: string;
@@ -371,6 +371,7 @@ export interface OrderClassificationRow {
   classification: OrderClass;
   is_manual: boolean;
   notes: string | null;
+  shipment_status: string | null;
 }
 
 export interface ReceivablesSummary {

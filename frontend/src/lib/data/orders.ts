@@ -17,11 +17,13 @@ export async function fetchOrdersByClassification(
   classification?: string | null,
   limit = 100,
   offset = 0,
+  undeliveredOnly = false,
 ): Promise<OrderClassificationRow[]> {
   const { data, error } = await supabase.rpc("get_orders_by_classification", {
     p_classification: classification ?? null,
     p_limit: limit,
     p_offset: offset,
+    p_undelivered_only: undeliveredOnly,
   });
   if (error) throw error;
   return (data ?? []) as OrderClassificationRow[];

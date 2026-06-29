@@ -22,10 +22,11 @@ export function useClassificationSummary() {
 export function useOrdersByClassification(
   classification?: string | null,
   limit = 100,
+  undeliveredOnly = false,
 ) {
   return useQuery({
-    queryKey: ["orders-by-classification", classification ?? "all", limit],
-    queryFn: () => fetchOrdersByClassification(classification, limit),
+    queryKey: ["orders-by-classification", classification ?? "all", limit, undeliveredOnly],
+    queryFn: () => fetchOrdersByClassification(classification, limit, 0, undeliveredOnly),
     staleTime: 30_000,
   });
 }
