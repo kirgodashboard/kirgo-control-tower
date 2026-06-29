@@ -64,10 +64,12 @@ const navGroups: NavGroup[] = [
     label: "Transactions",
     items: [
       { href: "/dashboard/sales-register",    label: "Orders",             icon: ShoppingCart },
-      { href: "/dashboard/logistics",          label: "Logistics Register", icon: Truck },
+      { href: "/dashboard/logistics",         label: "Logistics Register", icon: Truck },
       { href: "/dashboard/customer-register", label: "Customer Register",  icon: Users },
       { href: "/dashboard/purchases",         label: "Purchases",          icon: Package },
       { href: "/dashboard/expenses-register", label: "Expenses Register",  icon: FileText },
+      { href: "/dashboard/receipts",          label: "Receipts",           icon: ArrowDownCircle },
+      { href: "/dashboard/payments",          label: "Payments",           icon: ArrowUpCircle },
     ],
   },
   {
@@ -82,8 +84,6 @@ const navGroups: NavGroup[] = [
     label: "Finance & Bank",
     items: [
       { href: "/dashboard/bank",      label: "Bank Feed",          icon: Building2 },
-      { href: "/dashboard/receipts", label: "Receipts (Credits)", icon: ArrowDownCircle },
-      { href: "/dashboard/payments", label: "Payments (Debits)",  icon: ArrowUpCircle },
       { href: "/dashboard/expenses", label: "Expenses",           icon: Receipt },
       { href: "/dashboard/receivables", label: "Receivables",     icon: Wallet },
       { href: "/settings/bank-feeds",   label: "Bank Feed Settings", icon: Rss },
