@@ -5,19 +5,37 @@ import {
 } from "../_shared/sync-base.ts";
 
 const SR_BASE = "https://apiv2.shiprocket.in/v1/external";
-const MAX_DAYS_PER_RUN = 90; // Shiprocket rejects date ranges > ~90 days
+const MAX_DAYS_PER_WINDOW = 29; // Shiprocket shipments API hard limit: ≤ 30 days
 
 interface SrCredentials { email: string; password: string; }
 
+interface SrProduct {
+  channel_sku: string; quantity: number; price: string;
+}
+
 interface SrShipment {
-  id: number; channel_order_id: string; awb_code: string; status: string;
-  courier_name: string; payment_method: string; product_quantity: number;
-  channel_sku: string; total: string; freight_total: string; cod_charges: string;
-  created_at: string; updated_at: string; delivered_date: string | null;
-  rto_initiated_date: string | null; rto_delivered_date: string | null;
-  shipping_customer_city: string; shipping_customer_state: string;
-  shipping_pincode: string; etd: string | null; ndr_attempts: number;
-  latest_ndr_reason: string | null;
+  awb: string; courier: string; shipped_date: string;
+}
+
+interface SrOrder {
+  id: number;
+  channel_order_id: string;
+  status: string;
+  payment_method: string;
+  total: string | number;
+  customer_city: string;
+  customer_state: string;
+  customer_pincode: string;
+  zone: string;
+  delivered_date: string | null;
+  picked_up_date: string | null;
+  rto_edd: string | null;
+  product_quantity: number;
+  created_at: string;
+  updated_at: string;
+  products: SrProduct[];
+  shipments: SrShipment[];
+  charges?: { freight_charges: string; cod_charges: string };
 }
 
 async function loadCredentials(db: ReturnType<typeof makeSupabaseAdmin>, job: SyncJob): Promise<SrCredentials> {
@@ -44,39 +62,64 @@ function normalizeStatus(s: string): string {
   const s2 = s.toUpperCase().replace(/[\s\-]+/g, "_");
   const aliases: Record<string, string> = {
     CANCELED: "CANCELLED", CANCEL: "CANCELLED", NEW_ORDER: "NEW",
+    RETURN_CANCELLED: "CANCELLED",
     RTO_ACKNOWLEDGED: "RTO_INITIATED", RETURNED: "RTO_DELIVERED", SHIPMENT_LOST: "LOST",
   };
   return aliases[s2] ?? s2;
 }
 
 function normalizePaymentMethod(s: string): "prepaid" | "cod" | null {
-  const l = s.toLowerCase();
+  const l = (s ?? "").toLowerCase();
   if (l.includes("prepaid")) return "prepaid";
   if (l.includes("cod")) return "cod";
   return null;
 }
 
+// Parse Shiprocket date formats: "DD-MM-YYYY HH:MM:SS" or "YYYY-MM-DD HH:MM:SS"
+function parseSrDate(s: string | null): string | null {
+  if (!s) return null;
+  try {
+    // "04-06-2026 15:51:00" → ISO
+    const ddmmyyyy = s.match(/^(\d{2})-(\d{2})-(\d{4})\s+(\d{2}:\d{2}:\d{2})$/);
+    if (ddmmyyyy) return `${ddmmyyyy[3]}-${ddmmyyyy[2]}-${ddmmyyyy[1]}T${ddmmyyyy[4]}Z`;
+    // "2026-06-02 13:06:43" → ISO
+    const yyyymmdd = s.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2})$/);
+    if (yyyymmdd) return `${yyyymmdd[1]}T${yyyymmdd[2]}Z`;
+    return new Date(s).toISOString();
+  } catch { return null; }
+}
+
+// Convert "2 Jun 2026, 01:57 PM" → ISO string
+function parseSrHumanDate(s: string): string | null {
+  if (!s) return null;
+  try { return new Date(s.replace(" Jun ", " June ").replace(" Feb ", " February ")).toISOString(); }
+  catch { return null; }
+}
+
 const orderIdCache = new Map<string, number | null>();
 
 async function resolveOrderId(db: ReturnType<typeof makeSupabaseAdmin>, wcNum: string): Promise<number | null> {
-  if (orderIdCache.has(wcNum)) return orderIdCache.get(wcNum)!;
-  const { data } = await db.from("orders").select("id").eq("woocommerce_order_number", wcNum).maybeSingle();
+  // channel_order_id can be "2047" or "R_2039" — strip prefix for matching
+  const normalized = wcNum.replace(/^[A-Z_]+/i, "").trim();
+  const cacheKey = normalized;
+  if (orderIdCache.has(cacheKey)) return orderIdCache.get(cacheKey)!;
+  const { data } = await db.from("orders").select("id")
+    .eq("woocommerce_order_number", normalized).maybeSingle();
   const id = data?.id ?? null;
-  orderIdCache.set(wcNum, id);
+  orderIdCache.set(cacheKey, id);
   return id;
 }
 
-async function syncShipments(
+async function syncOrders(
   db: ReturnType<typeof makeSupabaseAdmin>, job: SyncJob, runId: number, jwt: string, after: string, repair: boolean,
 ): Promise<{ counters: RunCounters; watermarkTo: string }> {
   const counters: RunCounters = { records_fetched: 0, records_inserted: 0, records_updated: 0, records_skipped: 0, records_failed: 0 };
 
-  // Compute windowed date range — Shiprocket rejects ranges wider than ~90 days
   const sinceDate = repair
     ? new Date(Date.now() - 30 * 86_400_000)
     : new Date(after.slice(0, 10));
   const untilDate = new Date(sinceDate);
-  untilDate.setDate(untilDate.getDate() + MAX_DAYS_PER_RUN);
+  untilDate.setDate(untilDate.getDate() + MAX_DAYS_PER_WINDOW);
   if (untilDate > new Date()) untilDate.setTime(Date.now());
 
   const from = sinceDate.toISOString().slice(0, 10);
@@ -85,51 +128,80 @@ async function syncShipments(
   const headers = { Authorization: `Bearer ${jwt}`, "Content-Type": "application/json" };
 
   while (hasMore) {
-    const url = `${SR_BASE}/shipments?from=${from}&to=${until}&per_page=${job.batch_size}&page=${page}`;
+    const url = `${SR_BASE}/orders?from=${from}&to=${until}&per_page=${job.batch_size}&page=${page}&sort=ASC&sort_by=created_at`;
     const res = await fetchWithRetry(url, { headers });
-    if (!res.ok) throw new Error(`Shiprocket shipments API: ${res.status}`);
+    if (!res.ok) throw new Error(`Shiprocket orders API: ${res.status}`);
     const body = await res.json();
-    const shipments: SrShipment[] = body?.data?.data ?? [];
-    if (shipments.length === 0) break;
-    counters.records_fetched += shipments.length;
+    // Response: { data: [...], meta: { pagination: { ... } } }
+    const orders: SrOrder[] = Array.isArray(body?.data) ? body.data : [];
+    if (orders.length === 0) break;
+    counters.records_fetched += orders.length;
 
-    // Bulk-resolve order IDs then bulk-upsert shipments
-    const payloads = await Promise.all(shipments.map(async (s) => {
-      const orderId = await resolveOrderId(db, s.channel_order_id);
+    const payloads = await Promise.all(orders.map(async (order) => {
+      const orderId = await resolveOrderId(db, order.channel_order_id);
+      const awb = order.shipments?.[0]?.awb || null;
+      const courier = order.shipments?.[0]?.courier || null;
+      const shippedAt = parseSrDate(order.shipments?.[0]?.shipped_date ?? null);
+      const deliveredAt = parseSrDate(order.delivered_date);
+      const pickedUpAt = parseSrDate(order.picked_up_date);
+      const freightTotal = parseFloat(order.charges?.freight_charges ?? "0") || null;
+      const codCharges = parseFloat(order.charges?.cod_charges ?? "0") || 0;
+      const product = order.products?.[0];
+      const sku = product?.channel_sku || null;
+      const total = parseFloat(String(order.total)) || null;
       return {
-        order_id: orderId, shiprocket_order_id: s.id, awb_code: s.awb_code || null,
-        status: normalizeStatus(s.status), courier_company: s.courier_name || null,
-        channel_sku: s.channel_sku || null, product_quantity: s.product_quantity,
-        payment_method: normalizePaymentMethod(s.payment_method),
-        order_total_inr: parseFloat(s.total) || null, freight_total_inr: parseFloat(s.freight_total) || null,
-        cod_charges_inr: parseFloat(s.cod_charges) || 0, shiprocket_created_at: s.created_at,
-        delivered_at: s.delivered_date || null, rto_initiated_at: s.rto_initiated_date || null,
-        rto_delivered_at: s.rto_delivered_date || null, edd: s.etd ? s.etd.slice(0, 10) : null,
-        ndr_attempts: s.ndr_attempts ?? 0, latest_ndr_reason: s.latest_ndr_reason || null,
-        customer_city: s.shipping_customer_city || null, customer_state: s.shipping_customer_state || null,
-        customer_pincode: s.shipping_pincode || null,
+        order_id: orderId,
+        shiprocket_order_id: order.id,
+        awb_code: awb,
+        status: normalizeStatus(order.status),
+        courier_company: courier,
+        channel_sku: sku,
+        product_quantity: order.product_quantity ?? product?.quantity ?? 1,
+        payment_method: normalizePaymentMethod(order.payment_method),
+        order_total_inr: total,
+        freight_total_inr: freightTotal,
+        cod_charges_inr: codCharges,
+        zone: order.zone || null,
+        shiprocket_created_at: parseSrHumanDate(order.created_at),
+        picked_up_at: pickedUpAt,
+        shipped_at: shippedAt,
+        delivered_at: deliveredAt,
+        edd: order.rto_edd ? order.rto_edd.slice(0, 10) : null,
+        customer_city: order.customer_city || null,
+        customer_state: order.customer_state || null,
+        customer_pincode: order.customer_pincode || null,
       };
     }));
 
-    const { error: upsertErr } = await db.from("shipments")
-      .upsert(payloads, { onConflict: "awb_code", ignoreDuplicates: false });
-    if (upsertErr) {
-      counters.records_failed += shipments.length;
-      await recordSyncError(db, runId, job.integration_key, job.entity_type, null, "BATCH_ERROR", upsertErr.message, { from, until, page });
-    } else {
-      counters.records_updated += shipments.length;
-      const latest = shipments.at(-1)!.updated_at;
-      if (latest > watermarkTo) watermarkTo = latest;
+    // Filter out rows without AWB (orders not yet shipped)
+    const withAwb = payloads.filter((p) => !!p.awb_code);
+    const withoutAwb = payloads.length - withAwb.length;
+    counters.records_skipped += withoutAwb;
+
+    if (withAwb.length > 0) {
+      const { error: upsertErr } = await db.from("shipments")
+        .upsert(withAwb, { onConflict: "awb_code", ignoreDuplicates: false });
+      if (upsertErr) {
+        counters.records_failed += withAwb.length;
+        await recordSyncError(db, runId, job.integration_key, job.entity_type, null, "BATCH_ERROR", upsertErr.message, { from, until, page });
+      } else {
+        counters.records_updated += withAwb.length;
+      }
     }
 
-    hasMore = shipments.length === job.batch_size;
+    // Advance watermark using ISO created_at derived from parsed dates
+    const lastCreated = parseSrHumanDate(orders.at(-1)!.created_at);
+    if (lastCreated && lastCreated > watermarkTo) watermarkTo = lastCreated;
+
+    const totalPages = body?.meta?.pagination?.total_pages ?? 1;
+    hasMore = page < totalPages;
     page++;
   }
 
-  // Advance watermark to end of this window so next run picks up from there
-  if (counters.records_fetched > 0 && until + "T23:59:59Z" > watermarkTo) {
-    watermarkTo = until + "T23:59:59Z";
-  }
+  // Advance watermark to end of window on success
+  const windowEnd = until + "T23:59:59Z";
+  if (windowEnd > watermarkTo) watermarkTo = windowEnd;
+
   return { counters, watermarkTo };
 }
 
@@ -148,7 +220,7 @@ Deno.serve(async (req: Request) => {
     const jwt = await getJwt(creds);
     const after = computeWatermarkFrom(job);
     const repair = job.entity_type === "shipments_repair";
-    const result = await syncShipments(db, job, runId, jwt, after, repair);
+    const result = await syncOrders(db, job, runId, jwt, after, repair);
     const status = resolveRunStatus(result.counters);
     await completeSyncRun(db, runId, status, result.counters, result.watermarkTo, null, { after });
     if (status !== "failed") await advanceWatermark(db, job.id, result.watermarkTo);
