@@ -57,6 +57,7 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/finance",       label: "Finance",        icon: Landmark },
       { href: "/dashboard/forecasting",   label: "Forecasting",    icon: LineChart },
       { href: "/dashboard/profitability", label: "Profitability",  icon: ChartNoAxesCombined },
+      { href: "/dashboard/receivables",   label: "Receivables",    icon: Wallet },
     ],
   },
   {
@@ -67,24 +68,17 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/logistics",         label: "Logistics Register", icon: Truck },
       { href: "/dashboard/customer-register", label: "Customer Register",  icon: Users },
       { href: "/dashboard/purchases",         label: "Purchases",          icon: Package },
+      { href: "/dashboard/inventory",         label: "Inventory",          icon: Boxes },
       { href: "/dashboard/receipts",          label: "Receipts",           icon: ArrowDownCircle },
       { href: "/dashboard/payments",          label: "Payments",           icon: ArrowUpCircle },
-    ],
-  },
-  {
-    id: "inventory",
-    label: "Inventory",
-    items: [
-      { href: "/dashboard/inventory", label: "Inventory", icon: Boxes },
     ],
   },
   {
     id: "finance",
     label: "Finance & Bank",
     items: [
-      { href: "/dashboard/bank",      label: "Bank Feed",          icon: Building2 },
-      { href: "/dashboard/expenses", label: "Expenses",           icon: Receipt },
-      { href: "/dashboard/receivables", label: "Receivables",     icon: Wallet },
+      { href: "/dashboard/bank",        label: "Bank Feed",          icon: Building2 },
+      { href: "/dashboard/expenses",    label: "Expenses",           icon: Receipt },
       { href: "/settings/bank-feeds",   label: "Bank Feed Settings", icon: Rss },
     ],
   },
