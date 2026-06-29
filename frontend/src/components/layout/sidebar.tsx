@@ -86,8 +86,9 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/payments",            label: "Payments (Debits)",   icon: ArrowUpCircle },
       { href: "/dashboard/bank-classification", label: "Classify Transactions", icon: CreditCard },
       { href: "/dashboard/expenses",            label: "Expenses",            icon: Receipt },
-      { href: "/dashboard/receivables",         label: "Receivables",         icon: Wallet },
       { href: "/dashboard/expense-entry",       label: "New Expense",         icon: FilePlus },
+      { href: "/dashboard/receivables",         label: "Receivables",         icon: Wallet },
+      { href: "/settings/bank-feeds",           label: "Bank Feed Settings",  icon: Rss },
     ],
   },
   {
@@ -104,7 +105,6 @@ const navGroups: NavGroup[] = [
       { href: "/settings/company",               label: "Company",              icon: Globe },
       { href: "/settings/integrations",          label: "Integrations",         icon: SlidersHorizontal },
       { href: "/settings/integrations/health",   label: "Integration Health",   icon: Activity },
-      { href: "/settings/bank-feeds",            label: "Bank Feeds",           icon: Rss },
     ],
   },
 ];

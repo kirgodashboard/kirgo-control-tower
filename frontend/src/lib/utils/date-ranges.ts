@@ -32,7 +32,7 @@ export function getPeriodDates(preset: Period): DateRange {
       return { start: fmt(jan1), end: fmt(today), label: "Year to date" };
     }
     case "all":
-      return { start: "2023-01-01", end: fmt(today), label: "All time" };
+      return { start: "2020-01-01", end: fmt(today), label: "All time" };
   }
 }
 
