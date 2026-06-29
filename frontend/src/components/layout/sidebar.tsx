@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Radio, TrendingUp, Users, Package, Landmark, ChartNoAxesCombined,
-  ChevronRight, Receipt, X, Tags, Wallet, Boxes,
+  ChevronRight, Receipt, X, Wallet, Boxes,
   ShieldCheck, LineChart, Building2, Rss, Globe,
   ShoppingCart, Truck, FileText, ArrowDownCircle,
   ArrowUpCircle, ChevronDown, BookMarked, Inbox,
@@ -63,7 +63,7 @@ const navGroups: NavGroup[] = [
     id: "transactions",
     label: "Transactions",
     items: [
-      { href: "/dashboard/sales-register",    label: "Sales Register",     icon: ShoppingCart },
+      { href: "/dashboard/sales-register",    label: "Orders",             icon: ShoppingCart },
       { href: "/dashboard/logistics",          label: "Logistics Register", icon: Truck },
       { href: "/dashboard/customer-register", label: "Customer Register",  icon: Users },
       { href: "/dashboard/purchases",         label: "Purchases",          icon: Package },
@@ -93,7 +93,6 @@ const navGroups: NavGroup[] = [
     id: "admin",
     label: "Administration",
     items: [
-      { href: "/dashboard/order-classification", label: "Order Classification", icon: Tags },
       { href: "/dashboard/health",               label: "Health & Alerts",      icon: ShieldCheck },
       { href: "/dashboard/metric-catalog",       label: "Metric Catalog",       icon: BookMarked },
       { href: "/dashboard/import-center",        label: "Import Center",        icon: Inbox },

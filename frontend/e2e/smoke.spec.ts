@@ -25,7 +25,6 @@ const ROUTES = [
   { path: "/dashboard/expenses",          label: "Expenses" },
   { path: "/dashboard/receivables",       label: "Receivables" },
   // Administration
-  { path: "/dashboard/order-classification", label: "Order Classification" },
   { path: "/dashboard/health",            label: "Health & Alerts" },
   { path: "/dashboard/metric-catalog",    label: "Metric Catalog" },
   { path: "/dashboard/import-center",     label: "Import Center" },
@@ -42,6 +41,7 @@ const REDIRECT_ROUTES = [
   { path: "/dashboard/system-audit-center",   redirectsTo: "/dashboard/health" },
   { path: "/dashboard/bank-classification",   redirectsTo: "/dashboard/bank" },
   { path: "/dashboard/expense-entry",         redirectsTo: "/dashboard/expenses" },
+  { path: "/dashboard/order-classification",  redirectsTo: "/dashboard/sales-register" },
 ];
 
 for (const route of ROUTES) {
