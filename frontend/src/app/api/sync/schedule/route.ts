@@ -86,7 +86,7 @@ async function dispatchEdgeFn(
     db.from("sync_runs")
       .update({ status: "failed", completed_at: new Date().toISOString(),
                 error_summary: `Invocation failed: ${err.message}` })
-      .eq("id", run.id).then(() => {}).catch(console.error);
+      .eq("id", run.id).then(() => {}, console.error);
   });
 
   return run.id;
