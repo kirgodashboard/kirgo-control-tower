@@ -42,14 +42,14 @@ export function ProfitabilityKpiRow({ start, end }: Props) {
         value={formatINR(kpis.total_revenue_inr)}
         subValue={`${formatINR(kpis.delivered_revenue_inr)} recognised (delivered)`}
         icon={<TrendingUp className="h-4 w-4" />}
-        href="/dashboard/profitability"
+        href="/dashboard/sales-register"
       />
       <KpiCard
-        label="COGS (Landed)"
+        label="COGS — Landed Cost"
         value={formatINR(kpis.cogs_inr)}
-        subValue={`${formatPct((kpis.cogs_inr / (kpis.revenue_inr || 1)) * 100)} of revenue`}
+        subValue={`${formatPct((kpis.cogs_inr / (kpis.delivered_revenue_inr || 1)) * 100)} of delivered rev · delivered orders only`}
         icon={<Package className="h-4 w-4" />}
-        href="/dashboard/profitability"
+        href="/dashboard/purchases"
       />
       <KpiCard
         label="Gross Profit"
