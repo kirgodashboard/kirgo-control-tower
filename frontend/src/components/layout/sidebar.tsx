@@ -69,17 +69,17 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/customer-register", label: "Customer Register",  icon: Users },
       { href: "/dashboard/purchases",         label: "Purchases",          icon: Package },
       { href: "/dashboard/inventory",         label: "Inventory",          icon: Boxes },
+      { href: "/dashboard/expenses",          label: "Expenses",           icon: Receipt },
       { href: "/dashboard/receipts",          label: "Receipts",           icon: ArrowDownCircle },
       { href: "/dashboard/payments",          label: "Payments",           icon: ArrowUpCircle },
     ],
   },
   {
-    id: "finance",
-    label: "Finance & Bank",
+    id: "banking",
+    label: "Banking",
     items: [
-      { href: "/dashboard/bank",        label: "Bank Feed",          icon: Building2 },
-      { href: "/dashboard/expenses",    label: "Expenses",           icon: Receipt },
-      { href: "/settings/bank-feeds",   label: "Bank Feed Settings", icon: Rss },
+      { href: "/dashboard/bank",       label: "Bank Register",      icon: Building2 },
+      { href: "/settings/bank-feeds",  label: "Bank Feed",          icon: Rss },
     ],
   },
   {
