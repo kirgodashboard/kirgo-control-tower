@@ -115,12 +115,17 @@ function RegisterTab() {
   });
   const rows = data ?? [];
 
+  const NON_COMMERCIAL = new Set(["influencer_promotion", "brand_seeding", "internal_use", "replacement"]);
+
   const totals = useMemo(() => ({
-    orders:     rows.length,
-    revenue:    rows.reduce((s, r) => s + (r.order_total_inr ?? 0), 0),
-    discount:   rows.reduce((s, r) => s + (r.discount_inr ?? 0), 0),
-    qty:        rows.reduce((s, r) => s + (r.total_qty ?? 0), 0),
-    recognized: rows.filter(r => r.revenue_recognized).length,
+    orders:      rows.length,
+    revenue:     rows.reduce((s, r) => s + (r.order_total_inr ?? 0), 0),
+    commercialRevenue: rows
+      .filter(r => !NON_COMMERCIAL.has(r.classification ?? ""))
+      .reduce((s, r) => s + (r.order_total_inr ?? 0), 0),
+    discount:    rows.reduce((s, r) => s + (r.discount_inr ?? 0), 0),
+    qty:         rows.reduce((s, r) => s + (r.total_qty ?? 0), 0),
+    recognized:  rows.filter(r => r.revenue_recognized).length,
   }), [rows]);
 
   const selectCls = "h-8 px-2 rounded-md border border-border bg-card text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-violet-500";
@@ -185,15 +190,16 @@ function RegisterTab() {
       {/* KPI strip */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         {[
-          { label: "Orders",             value: formatCount(totals.orders) },
-          { label: "Gross Revenue",      value: formatINR(totals.revenue) },
-          { label: "Total Discount",     value: formatINR(totals.discount) },
-          { label: "Units Sold",         value: formatCount(totals.qty) },
-          { label: "Revenue Recognized", value: `${totals.recognized} / ${totals.orders}` },
-        ].map(({ label, value }) => (
+          { label: "Orders",              value: formatCount(totals.orders) },
+          { label: "Commercial Revenue",  value: formatINR(totals.commercialRevenue), sub: "paid sales only" },
+          { label: "Gross Order Value",   value: formatINR(totals.revenue),            sub: "all classifications" },
+          { label: "Total Discount",      value: formatINR(totals.discount) },
+          { label: "Revenue Recognized",  value: `${totals.recognized} / ${totals.orders}` },
+        ].map(({ label, value, sub }) => (
           <div key={label} className="rounded-xl border border-border bg-card p-4">
             <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">{label}</p>
             <p className="text-lg font-bold tabular-nums text-foreground">{value}</p>
+            {sub && <p className="text-[10px] text-muted-foreground mt-0.5">{sub}</p>}
           </div>
         ))}
       </div>
