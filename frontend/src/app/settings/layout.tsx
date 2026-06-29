@@ -5,12 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  Building2, Rss, Users, Bell,
+  Building2, Users, Bell,
 } from "lucide-react";
 
 const NAV = [
   { href: "/settings/company",       label: "Company",       icon: Building2 },
-  { href: "/settings/bank-feeds",    label: "Bank Feeds",    icon: Rss       },
   { href: "/settings/users",         label: "Users & Roles", icon: Users     },
   { href: "/settings/notifications", label: "Notifications", icon: Bell      },
 ];
