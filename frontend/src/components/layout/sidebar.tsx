@@ -7,8 +7,8 @@ import {
   Radio, TrendingUp, Users, Package, Landmark, ChartNoAxesCombined,
   ChevronRight, Receipt, FilePlus, CreditCard, X, Tags, Wallet, Boxes,
   ShieldCheck, LineChart, SlidersHorizontal, Building2, Rss, Globe,
-  ClipboardList, ShoppingCart, Truck, FileText, ArrowDownCircle,
-  ArrowUpCircle, ChevronDown, Activity, BookMarked, ScanLine, Inbox,
+  ShoppingCart, Truck, FileText, ArrowDownCircle,
+  ArrowUpCircle, ChevronDown, BookMarked, Inbox,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -96,15 +96,11 @@ const navGroups: NavGroup[] = [
     label: "Administration",
     items: [
       { href: "/dashboard/order-classification", label: "Order Classification", icon: Tags },
-      { href: "/dashboard/data-quality",         label: "Data Quality",         icon: ShieldCheck },
-      { href: "/dashboard/data-audit",           label: "Data Audit",           icon: ClipboardList },
+      { href: "/dashboard/health",               label: "Health & Alerts",      icon: ShieldCheck },
       { href: "/dashboard/metric-catalog",       label: "Metric Catalog",       icon: BookMarked },
       { href: "/dashboard/import-center",        label: "Import Center",        icon: Inbox },
-      { href: "/dashboard/system-audit-center",  label: "System Audit Center",  icon: ScanLine },
-      { href: "/dashboard/system-health",        label: "System Health",        icon: Activity },
       { href: "/settings/company",               label: "Company",              icon: Globe },
       { href: "/settings/integrations",          label: "Integrations",         icon: SlidersHorizontal },
-      { href: "/settings/integrations/health",   label: "Integration Health",   icon: Activity },
     ],
   },
 ];
