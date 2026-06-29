@@ -9,14 +9,16 @@ export function CodTable() {
 
   const outstanding = (data as {
     awb_code: string;
+    order_total_inr: number;
     cod_payable_inr: number;
+    customer_name: string;
     delivered_at: string;
     days_outstanding: number;
     cod_crf_id: string | null;
     is_reconciled: boolean;
   }[]).filter((r) => !r.is_reconciled);
 
-  const totalOutstanding = outstanding.reduce((s, r) => s + Number(r.cod_payable_inr), 0);
+  const totalOutstanding = outstanding.reduce((s, r) => s + Number(r.order_total_inr), 0);
 
   return (
     <div className="rounded-xl border border-border bg-card p-5">
@@ -35,7 +37,8 @@ export function CodTable() {
           <thead>
             <tr className="border-b border-border">
               <th className="text-left text-[11px] font-semibold uppercase tracking-widest text-muted-foreground pb-3 pr-4">AWB</th>
-              <th className="text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground pb-3 pr-4">COD Amount</th>
+              <th className="text-left text-[11px] font-semibold uppercase tracking-widest text-muted-foreground pb-3 pr-4">Customer</th>
+              <th className="text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground pb-3 pr-4">Order Value</th>
               <th className="text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground pb-3 pr-4">Days Out</th>
               <th className="text-left text-[11px] font-semibold uppercase tracking-widest text-muted-foreground pb-3 pr-4">CRF ID</th>
               <th className="text-center text-[11px] font-semibold uppercase tracking-widest text-muted-foreground pb-3">Status</th>
@@ -62,8 +65,11 @@ export function CodTable() {
             {!isLoading &&
               outstanding.slice(0, 20).map((row) => (
                 <tr key={row.awb_code} className="border-b border-border/30 hover:bg-accent/30 transition-colors">
-                  <td className="py-4 pr-4 font-mono text-[13px] text-foreground">{row.awb_code}</td>
-                  <td className="py-4 pr-4 text-right text-[15px] tabular-nums font-medium">{formatINR(row.cod_payable_inr, false)}</td>
+                  <td className="py-4 pr-4 font-mono text-[13px] text-foreground">
+                    <span className="block">{row.awb_code}</span>
+                    <span className="text-[11px] text-muted-foreground">{row.customer_name}</span>
+                  </td>
+                  <td className="py-4 pr-4 text-right text-[15px] tabular-nums font-medium">{formatINR(row.order_total_inr, false)}</td>
                   <td className={`py-4 pr-4 text-right text-[15px] tabular-nums font-semibold ${Number(row.days_outstanding) > 30 ? "text-red-400" : Number(row.days_outstanding) > 14 ? "text-amber-400" : "text-muted-foreground"}`}>
                     {Math.floor(row.days_outstanding)}d
                   </td>
