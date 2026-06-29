@@ -11,7 +11,7 @@ interface WcOrder {
   payment_method_title: string; transaction_id: string; total: string;
   discount_total: string; shipping_total: string; date_created: string;
   date_paid: string | null; customer_id: number;
-  billing: { city: string; state: string; postcode: string };
+  billing: { first_name: string; last_name: string; email: string; city: string; state: string; postcode: string };
   meta_data: Array<{ key: string; value: string }>;
   line_items: Array<{
     id: number; product_id: number; variation_id: number;
@@ -73,6 +73,9 @@ async function syncOrders(
         payment_method_title: order.payment_method_title, transaction_id: order.transaction_id || null,
         order_total_inr: parseFloat(order.total), discount_inr: parseFloat(order.discount_total),
         shipping_charged_inr: parseFloat(order.shipping_total),
+        billing_first_name: order.billing.first_name || null,
+        billing_last_name: order.billing.last_name || null,
+        billing_email: order.billing.email || null,
         billing_city: order.billing.city || null, billing_state: order.billing.state || null,
         billing_pincode: order.billing.postcode || null, ordered_at: order.date_created,
         paid_at: order.date_paid || null,
