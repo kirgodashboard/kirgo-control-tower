@@ -22,9 +22,13 @@ const CATEGORY_GROUPS = ["Operating", "Finance", "Capital", "Other"];
 
 const CREDIT_TYPES = [
   { value: "gateway_settlement", label: "Gateway Settlement (Razorpay/CCAvenue)" },
+  { value: "gokwik_settlement",  label: "GoKwik Settlement" },
   { value: "cod_remittance",     label: "COD Remittance (Shiprocket)" },
-  { value: "founder_transfer",   label: "Founder Transfer" },
+  { value: "founder_transfer",   label: "Founder / Investor Transfer" },
+  { value: "advance_received",   label: "Advance / Loan Received" },
   { value: "customer_refund",    label: "Customer Refund Received" },
+  { value: "bank_interest",      label: "Bank Interest / FD Returns" },
+  { value: "tax_refund",         label: "GST / Tax Refund" },
   { value: "miscellaneous",      label: "Other / Miscellaneous Income" },
 ];
 

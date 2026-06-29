@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useDataQuality } from "@/lib/hooks/use-data-quality";
 import { PageHeader } from "@/components/ui/page-header";
 import { formatINR } from "@/lib/utils/format";
@@ -12,6 +13,7 @@ import {
   Package,
   RefreshCw,
   Clock,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -53,9 +55,11 @@ interface CheckRowProps {
   value: string | number;
   rag: Rag;
   detail?: string;
+  actionHref?: string;
+  actionLabel?: string;
 }
 
-function CheckRow({ label, value, rag, detail }: CheckRowProps) {
+function CheckRow({ label, value, rag, detail, actionHref, actionLabel }: CheckRowProps) {
   const c = ragColor(rag);
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-border last:border-0">
@@ -64,6 +68,15 @@ function CheckRow({ label, value, rag, detail }: CheckRowProps) {
         <div className="min-w-0">
           <p className="text-sm text-foreground">{label}</p>
           {detail && <p className="text-xs text-muted-foreground mt-0.5">{detail}</p>}
+          {actionHref && rag !== "green" && (
+            <Link
+              href={actionHref}
+              className="inline-flex items-center gap-1 text-[11px] text-violet-400 hover:text-violet-300 mt-0.5"
+            >
+              {actionLabel ?? "Fix →"}
+              <ArrowRight className="h-2.5 w-2.5" />
+            </Link>
+          )}
         </div>
       </div>
       <span
@@ -173,13 +186,10 @@ export default function DataQualityPage() {
     data.missing_expense_count === 0 ? "green" :
     data.missing_expense_count <= 5 ? "amber" : "red";
 
-  const codVariancePct =
-    data.cod_delivered_inr > 0
-      ? Math.abs(data.cod_variance_inr / data.cod_delivered_inr) * 100
-      : 0;
+  // cod_variance_inr now = cod_receivable_inr() = COD outstanding (0 when settled)
   const codVarianceRag: Rag =
-    codVariancePct < 2 ? "green" :
-    codVariancePct < 10 ? "amber" : "red";
+    data.cod_variance_inr === 0 ? "green" :
+    data.cod_variance_inr < 10000 ? "amber" : "red";
 
   const bankDomainRag = domainRag([bankUnclassifiedRag, bankMissingExpenseRag, codVarianceRag]);
 
@@ -278,23 +288,23 @@ export default function DataQualityPage() {
             label="Unclassified debits"
             value={data.unclassified_bank_count === 0 ? "None" : data.unclassified_bank_count}
             rag={bankUnclassifiedRag}
-            detail="Withdrawals with transaction_type = unclassified"
+            detail="Bank withdrawals not yet categorised"
+            actionHref="/dashboard/bank-classification"
+            actionLabel="Classify now"
           />
           <CheckRow
             label="Missing expense records"
             value={data.missing_expense_count === 0 ? "None" : data.missing_expense_count}
             rag={bankMissingExpenseRag}
-            detail="Debits ≥ ₹500 without a linked expense entry"
+            detail="Debits ≥ ₹500 with no linked expense entry"
+            actionHref="/dashboard/bank-classification"
+            actionLabel="Link expenses"
           />
           <CheckRow
-            label="COD variance"
-            value={
-              data.cod_variance_inr === 0
-                ? "Balanced"
-                : `${formatINR(Math.abs(data.cod_variance_inr))} ${data.cod_variance_inr > 0 ? "under" : "over"}`
-            }
+            label="COD outstanding"
+            value={data.cod_variance_inr === 0 ? "Settled" : formatINR(data.cod_variance_inr)}
             rag={codVarianceRag}
-            detail={`Delivered ${formatINR(data.cod_delivered_inr)} · Received ${formatINR(data.cod_received_inr)}`}
+            detail="Pending Shiprocket COD remittance (from Operations)"
           />
         </DomainCard>
 
