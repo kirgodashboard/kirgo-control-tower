@@ -184,8 +184,12 @@ export default function OrderClassificationPage() {
     refetch();
   };
 
+  const unclassifiedCount = summaryMap["unclassified"]?.order_count ?? 0;
   const FILTER_TABS = [
     { label: "All", value: null },
+    ...(unclassifiedCount > 0
+      ? [{ label: `Unclassified (${unclassifiedCount})`, value: "unclassified" }]
+      : []),
     { label: "COD pending", value: "cod_pending" },
     { label: "Influencer promo", value: "influencer_promotion" },
     { label: "Brand seeding", value: "brand_seeding" },
