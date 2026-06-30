@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  Building2, Users, Bell, Plug, HeartPulse,
+  Building2, Users, Bell, Plug, HeartPulse, Rss,
 } from "lucide-react";
 
 const NAV = [
@@ -14,6 +14,7 @@ const NAV = [
   { href: "/settings/integrations/health",  label: "Integration Health",   icon: HeartPulse },
   { href: "/settings/users",                label: "Users & Roles",        icon: Users      },
   { href: "/settings/notifications",        label: "Notifications",        icon: Bell       },
+  { href: "/settings/bank-feeds",           label: "Bank Feeds",           icon: Rss        },
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

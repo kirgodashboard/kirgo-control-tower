@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   Radio, TrendingUp, Users, Package, Landmark, ChartNoAxesCombined,
   ChevronRight, Receipt, X, Wallet, Boxes,
-  ShieldCheck, LineChart, Building2, Rss, Globe,
+  ShieldCheck, LineChart, Building2, Globe,
   ShoppingCart, Truck, ArrowDownCircle,
   ArrowUpCircle, ChevronDown, BookMarked, Inbox,
 } from "lucide-react";
@@ -72,14 +72,7 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/expenses",          label: "Expenses",           icon: Receipt },
       { href: "/dashboard/receipts",          label: "Receipts",           icon: ArrowDownCircle },
       { href: "/dashboard/payments",          label: "Payments",           icon: ArrowUpCircle },
-    ],
-  },
-  {
-    id: "banking",
-    label: "Banking",
-    items: [
-      { href: "/dashboard/bank",       label: "Bank Register",      icon: Building2 },
-      { href: "/settings/bank-feeds",  label: "Bank Feed",          icon: Rss },
+      { href: "/dashboard/bank",              label: "Bank Register",      icon: Building2 },
     ],
   },
   {
