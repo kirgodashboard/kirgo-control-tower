@@ -13,10 +13,14 @@ export function useBankAccounts() {
   });
 }
 
-export function useBankKpis(accountId: number | null = null) {
+export function useBankKpis(
+  accountId: number | null = null,
+  from?: string,
+  to?: string,
+) {
   return useQuery({
-    queryKey: ["bank-kpis", accountId],
-    queryFn: () => fetchBankKpis(accountId),
+    queryKey: ["bank-kpis", accountId, from, to],
+    queryFn: () => fetchBankKpis(accountId, from, to),
     staleTime: 60_000,
   });
 }

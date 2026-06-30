@@ -27,10 +27,11 @@ import type { ExpenseListItem } from "@/types/kpi";
 // ── Types / constants ─────────────────────────────────────────────────────────
 
 const OVERVIEW_PERIODS = [
-  { key: "mtd", label: "MTD" },
-  { key: "30d", label: "30 Days" },
-  { key: "90d", label: "90 Days" },
+  { key: "mtd", label: "MTD"      },
+  { key: "30d", label: "30 Days"  },
+  { key: "90d", label: "90 Days"  },
   { key: "6m",  label: "6 Months" },
+  { key: "1y",  label: "1 Year"   },
   { key: "all", label: "All Time" },
 ];
 

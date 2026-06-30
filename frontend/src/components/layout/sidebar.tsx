@@ -58,6 +58,7 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/forecasting",   label: "Forecasting",    icon: LineChart },
       { href: "/dashboard/profitability", label: "Profitability",  icon: ChartNoAxesCombined },
       { href: "/dashboard/receivables",   label: "Receivables",    icon: Wallet },
+      { href: "/dashboard/banking",       label: "Banking",        icon: Building2 },
     ],
   },
   {

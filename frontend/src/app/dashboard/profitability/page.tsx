@@ -19,12 +19,13 @@ import {
 import { useProfitabilityKpis } from "@/lib/hooks/use-profitability";
 import { formatINR, formatPct } from "@/lib/utils/format";
 
-type Period = "30d" | "90d" | "6m" | "all";
+type Period = "30d" | "90d" | "6m" | "1y" | "all";
 
 const PERIODS = [
-  { key: "30d", label: "30 Days" },
-  { key: "90d", label: "90 Days" },
+  { key: "30d", label: "30 Days"  },
+  { key: "90d", label: "90 Days"  },
   { key: "6m",  label: "6 Months" },
+  { key: "1y",  label: "1 Year"   },
   { key: "all", label: "All Time" },
 ];
 
@@ -44,12 +45,12 @@ function periodDates(period: Period): { start: string; end: string; label: strin
   if (period === "all") {
     return { start: "2023-01-01", end, label: "All Time (since Oct 2023)" };
   }
-  const days = period === "30d" ? 30 : period === "90d" ? 90 : 180;
+  const days = period === "30d" ? 30 : period === "90d" ? 90 : period === "1y" ? 365 : 180;
   const start = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
   return {
     start,
     end,
-    label: period === "6m" ? "Last 6 Months" : `Last ${days} Days`,
+    label: period === "6m" ? "Last 6 Months" : period === "1y" ? "Last 12 Months" : `Last ${days} Days`,
   };
 }
 
