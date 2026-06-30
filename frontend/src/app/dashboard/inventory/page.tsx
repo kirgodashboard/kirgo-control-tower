@@ -412,6 +412,7 @@ export default function InventoryPage() {
       <PageHeader
         title="Inventory"
         subtitle="Stock position, movement, ageing and reorder intelligence"
+        backHref="/review"
       >
         <button
           onClick={handleRefresh}

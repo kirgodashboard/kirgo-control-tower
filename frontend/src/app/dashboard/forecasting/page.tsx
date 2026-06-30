@@ -216,6 +216,7 @@ export default function ForecastingPage() {
             ? `Based on ${revenue.months_of_data} months of historical data · ${revenue.growth_rate_pct > 0 ? "+" : ""}${revenue.growth_rate_pct}% observed monthly growth`
             : "Forward-looking projections from historical trends"
         }
+        backHref="/review"
       />
 
       {/* ── Scenario selector ─────────────────────────────────────────────── */}

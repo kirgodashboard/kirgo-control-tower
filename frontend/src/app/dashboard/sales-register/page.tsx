@@ -534,6 +534,7 @@ export default function OrdersPage() {
       <PageHeader
         title="Orders"
         subtitle="Sales register and order classification in one place"
+        backHref="/review"
       />
 
       {/* Tab strip */}

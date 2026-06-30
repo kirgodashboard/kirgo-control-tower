@@ -438,6 +438,7 @@ export default function HealthPage() {
       <PageHeader
         title="Health"
         subtitle="Alerts to fix, integration sync status, and KPI validation"
+        backHref="/review"
       />
 
       {/* Two-column on desktop */}

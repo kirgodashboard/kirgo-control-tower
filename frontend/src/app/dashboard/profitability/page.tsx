@@ -61,7 +61,7 @@ export default function ProfitabilityPage() {
 
   return (
     <div className="min-h-full p-4 sm:p-6 space-y-6">
-      <PageHeader title="Profitability" subtitle={label}>
+      <PageHeader title="Profitability" subtitle={label} backHref="/review">
         <PeriodTabs
           value={period}
           options={PERIODS}

@@ -65,7 +65,7 @@ export default function BankingDashboardPage() {
 
   return (
     <div className="min-h-full p-4 sm:p-6 space-y-5">
-      <PageHeader title="Banking" subtitle="Account balances, cashflow summary and reconciliation status">
+      <PageHeader title="Banking" subtitle="Account balances, cashflow summary and reconciliation status" backHref="/review">
         <div className="flex items-center gap-2 flex-wrap">
           <select
             value={accountId ?? ""}

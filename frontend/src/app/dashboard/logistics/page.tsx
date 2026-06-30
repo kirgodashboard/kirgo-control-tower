@@ -163,6 +163,7 @@ export default function LogisticsRegisterPage() {
         <PageHeader
           title="Logistics Register"
           subtitle="Shipment-level view — AWB, courier status, COD reconciliation, delivery timeline"
+          backHref="/review"
         />
         <div className="flex items-center gap-2 flex-shrink-0">
           <button

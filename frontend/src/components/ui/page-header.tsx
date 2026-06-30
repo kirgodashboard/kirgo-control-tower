@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
@@ -5,18 +7,31 @@ interface PageHeaderProps {
   subtitle?: string;
   children?: React.ReactNode; // right slot (period selector, actions)
   className?: string;
+  backHref?: string;
+  backLabel?: string;
 }
 
-export function PageHeader({ title, subtitle, children, className }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, children, className, backHref, backLabel }: PageHeaderProps) {
   return (
-    <div className={cn("flex items-center justify-between flex-wrap gap-3 pb-2", className)}>
-      <div>
-        <h1 className="text-[28px] sm:text-[32px] font-bold text-foreground tracking-tight leading-tight">{title}</h1>
-        {subtitle && (
-          <p className="text-[14px] text-muted-foreground mt-1">{subtitle}</p>
-        )}
+    <div className={cn("pb-2", className)}>
+      {backHref && (
+        <Link
+          href={backHref}
+          className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground mb-2 transition-colors group"
+        >
+          <ArrowLeft className="h-3 w-3 group-hover:-translate-x-0.5 transition-transform" />
+          {backLabel ?? "Business Review"}
+        </Link>
+      )}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-[28px] sm:text-[32px] font-bold text-foreground tracking-tight leading-tight">{title}</h1>
+          {subtitle && (
+            <p className="text-[14px] text-muted-foreground mt-1">{subtitle}</p>
+          )}
+        </div>
+        {children}
       </div>
-      {children}
     </div>
   );
 }

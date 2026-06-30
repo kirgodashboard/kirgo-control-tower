@@ -97,31 +97,21 @@ export default function BusinessReviewPage() {
 
         {/* 1 · Executive Summary */}
         <section id="exec" className="scroll-mt-24 space-y-4">
-          <SectionHeader
-            label="Executive Summary"
-            href="/dashboard/executive"
-            linkLabel="Full overview"
-          />
+          <SectionHeader label="Executive Summary" />
           <ExecKpiRow start={dr.start} end={dr.end} />
+          <DrillDown href="/dashboard/executive" label="Full Executive Review" />
         </section>
 
         {/* 2 · Sales Performance */}
         <section id="sales" className="scroll-mt-24 space-y-4">
-          <SectionHeader
-            label="Sales Performance"
-            href="/dashboard/sales-register"
-            linkLabel="Orders register"
-          />
+          <SectionHeader label="Sales Performance" />
           <SalesSection start={dr.start} end={dr.end} />
+          <DrillDown href="/dashboard/sales-register" label="Orders Register" />
         </section>
 
         {/* 3 · Customer Intelligence */}
         <section id="customers" className="scroll-mt-24 space-y-4">
-          <SectionHeader
-            label="Customer Intelligence"
-            href="/dashboard/customers"
-            linkLabel="Customer analytics"
-          />
+          <SectionHeader label="Customer Intelligence" />
           <CustomerKpiRow start={dr.start} end={dr.end} />
           <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
@@ -129,75 +119,58 @@ export default function BusinessReviewPage() {
             </p>
             <TopCitiesTable />
           </div>
+          <DrillDown href="/dashboard/customers" label="Customer Analytics" />
         </section>
 
         {/* 4 · Inventory Intelligence */}
         <section id="inventory" className="scroll-mt-24 space-y-4">
-          <SectionHeader
-            label="Inventory Intelligence"
-            href="/dashboard/inventory"
-            linkLabel="Stock register"
-          />
+          <SectionHeader label="Inventory Intelligence" />
           <InventorySection />
+          <DrillDown href="/dashboard/inventory" label="Stock & Inventory Register" />
         </section>
 
         {/* 5 · Operations & Fulfilment */}
         <section id="operations" className="scroll-mt-24 space-y-4">
-          <SectionHeader
-            label="Operations & Fulfilment"
-            href="/dashboard/logistics"
-            linkLabel="Logistics register"
-          />
+          <SectionHeader label="Operations & Fulfilment" />
           <OpsKpiRow start={dr.start} end={dr.end} />
+          <DrillDown href="/dashboard/logistics" label="Logistics Register" />
         </section>
 
         {/* 6 · Marketing & Channels */}
         <section id="marketing" className="scroll-mt-24 space-y-4">
-          <SectionHeader label="Marketing & Channels" href="" linkLabel="" />
+          <SectionHeader label="Marketing & Channels" />
           <MarketingPlaceholder />
         </section>
 
         {/* 7 · Forecasting */}
         <section id="forecasting" className="scroll-mt-24 space-y-4">
-          <SectionHeader
-            label="Forecasting"
-            href="/dashboard/forecasting"
-            linkLabel="Full forecast"
-          />
+          <SectionHeader label="Forecasting" />
           <ForecastInsightCards />
+          <DrillDown href="/dashboard/forecasting" label="Full Forecast" />
         </section>
 
         {/* 8 · Data Quality & Exceptions */}
         <section id="data-quality" className="scroll-mt-24 space-y-4">
-          <SectionHeader
-            label="Data Quality & Exceptions"
-            href="/dashboard/health"
-            linkLabel="Health center"
-          />
+          <SectionHeader label="Data Quality & Exceptions" />
           <div className="rounded-xl border border-border bg-card p-4">
             <AlertPanel />
           </div>
+          <DrillDown href="/dashboard/health" label="Health & Alerts Center" />
         </section>
 
         {/* 9 · Profitability */}
         <section id="profitability" className="scroll-mt-24 space-y-4">
-          <SectionHeader
-            label="Profitability"
-            href="/dashboard/profitability"
-            linkLabel="Full P&L analysis"
-          />
+          <SectionHeader label="Profitability" />
           <ProfitabilityKpiRow start={dr.start} end={dr.end} />
           <MiniWaterfall start={dr.start} end={dr.end} />
+          <DrillDown href="/dashboard/profitability" label="Full P&L Analysis" />
         </section>
 
         {/* 10 · Bank & Cash Position */}
         <section id="banking" className="scroll-mt-24 space-y-4">
-          <SectionHeader
-            label="Bank & Cash Position"
-            href="/dashboard/banking"
-            linkLabel="Banking dashboard"
-          />
+          <SectionHeader label="Bank & Cash Position" />
           <BankSection start={dr.start} end={dr.end} />
+          <DrillDown href="/dashboard/banking" label="Banking Dashboard" />
         </section>
 
       </div>
@@ -207,30 +180,23 @@ export default function BusinessReviewPage() {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function SectionHeader({
-  label,
-  href,
-  linkLabel,
-}: {
-  label: string;
-  href: string;
-  linkLabel: string;
-}) {
+function SectionHeader({ label }: { label: string }) {
   return (
-    <div className="flex items-center justify-between">
-      <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-        {label}
-      </p>
-      {linkLabel && href && (
-        <Link
-          href={href}
-          className="text-[11px] text-violet-400 hover:text-violet-300 flex items-center gap-1 transition-colors"
-        >
-          {linkLabel}
-          <ChevronRight className="h-3 w-3" />
-        </Link>
-      )}
-    </div>
+    <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+      {label}
+    </p>
+  );
+}
+
+function DrillDown({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center justify-center gap-2 py-2.5 rounded-lg border border-border/50 hover:border-violet-500/30 hover:bg-violet-500/5 text-[12px] text-muted-foreground hover:text-violet-400 transition-all group"
+    >
+      {label}
+      <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+    </Link>
   );
 }
 

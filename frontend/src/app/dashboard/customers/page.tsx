@@ -23,7 +23,7 @@ export default function CustomersPage() {
 
   return (
     <div className="min-h-full p-4 sm:p-6 space-y-6">
-      <PageHeader title="Customer Intelligence" subtitle={range.label}>
+      <PageHeader title="Customer Intelligence" subtitle={range.label} backHref="/review">
         <PeriodTabs value={period} options={PERIODS} onChange={(k) => setPeriod(k as Period | "mtd")} />
       </PageHeader>
 
