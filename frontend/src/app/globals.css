@@ -144,6 +144,15 @@
   }
 }
 
+/* Hide scrollbars while preserving scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Director Command Center canvas */
 .dark .director-canvas {
   background: hsl(var(--background));

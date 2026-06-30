@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  Radio, TrendingUp, Users, Package, Landmark, ChartNoAxesCombined,
-  ChevronRight, Receipt, X, Wallet, Boxes,
-  ShieldCheck, LineChart, Building2, Globe,
+  TrendingUp, Users, Package, Landmark, Wallet, Boxes,
+  ShieldCheck, Building2, Globe,
   ShoppingCart, Truck, ArrowDownCircle,
   ArrowUpCircle, ChevronDown, BookMarked, Inbox,
+  ChevronRight, Receipt, X, LayoutDashboard,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -47,50 +47,57 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    id: "dashboards",
-    label: "Dashboards",
+    id: "review",
+    label: "Business Review",
     items: [
-      { href: "/dashboard",               label: "Command Center", icon: Radio,              exact: true },
-      { href: "/dashboard/executive",     label: "Executive",      icon: TrendingUp },
-      { href: "/dashboard/customers",     label: "Customers",      icon: Users },
-      { href: "/dashboard/operations",    label: "Operations",     icon: Package },
-      { href: "/dashboard/finance",       label: "Finance",        icon: Landmark },
-      { href: "/dashboard/forecasting",   label: "Forecasting",    icon: LineChart },
-      { href: "/dashboard/profitability", label: "Profitability",  icon: ChartNoAxesCombined },
-      { href: "/dashboard/receivables",   label: "Receivables",    icon: Wallet },
-      { href: "/dashboard/banking",       label: "Banking",        icon: Building2 },
+      { href: "/review", label: "Business Review", icon: LayoutDashboard, exact: true },
     ],
   },
   {
     id: "transactions",
     label: "Transactions",
     items: [
-      { href: "/dashboard/sales-register",    label: "Orders",             icon: ShoppingCart },
-      { href: "/dashboard/logistics",         label: "Logistics Register", icon: Truck },
-      { href: "/dashboard/customer-register", label: "Customer Register",  icon: Users },
-      { href: "/dashboard/purchases",         label: "Purchases",          icon: Package },
-      { href: "/dashboard/inventory",         label: "Inventory",          icon: Boxes },
-      { href: "/dashboard/expenses",          label: "Expenses",           icon: Receipt },
-      { href: "/dashboard/receipts",          label: "Receipts",           icon: ArrowDownCircle },
-      { href: "/dashboard/payments",          label: "Payments",           icon: ArrowUpCircle },
-      { href: "/dashboard/bank",              label: "Bank Register",      icon: Building2 },
+      { href: "/dashboard/sales-register",    label: "Orders",            icon: ShoppingCart },
+      { href: "/dashboard/logistics",         label: "Logistics",         icon: Truck },
+      { href: "/dashboard/customer-register", label: "Customer Register", icon: Users },
+      { href: "/dashboard/purchases",         label: "Purchases",         icon: Package },
+      { href: "/dashboard/expenses",          label: "Expenses",          icon: Receipt },
+      { href: "/dashboard/receipts",          label: "Receipts",          icon: ArrowDownCircle },
+      { href: "/dashboard/payments",          label: "Payments",          icon: ArrowUpCircle },
+    ],
+  },
+  {
+    id: "inventory",
+    label: "Inventory",
+    items: [
+      { href: "/dashboard/inventory", label: "Stock & Inventory", icon: Boxes },
+    ],
+  },
+  {
+    id: "finance-bank",
+    label: "Finance & Bank",
+    items: [
+      { href: "/dashboard/banking",     label: "Banking Dashboard", icon: Building2 },
+      { href: "/dashboard/bank",        label: "Bank Register",     icon: Landmark },
+      { href: "/dashboard/receivables", label: "Receivables",       icon: Wallet },
+      { href: "/dashboard/finance",     label: "Finance & Cash",    icon: TrendingUp },
     ],
   },
   {
     id: "admin",
     label: "Administration",
     items: [
-      { href: "/dashboard/health",               label: "Health & Alerts",      icon: ShieldCheck },
-      { href: "/dashboard/metric-catalog",       label: "Metric Catalog",       icon: BookMarked },
-      { href: "/dashboard/import-center",        label: "Import Center",        icon: Inbox },
-      { href: "/settings/company",               label: "Company & Settings",   icon: Globe },
+      { href: "/dashboard/health",         label: "Health & Alerts",    icon: ShieldCheck },
+      { href: "/dashboard/metric-catalog", label: "Metric Catalog",     icon: BookMarked },
+      { href: "/dashboard/import-center",  label: "Import Center",      icon: Inbox },
+      { href: "/settings/company",         label: "Company & Settings", icon: Globe },
     ],
   },
 ];
 
 function isGroupActive(group: NavGroup, pathname: string): boolean {
   return group.items.some((item) =>
-    item.exact ? pathname === item.href : pathname.startsWith(item.href)
+    item.exact ? pathname === item.href : pathname.startsWith(item.href),
   );
 }
 
@@ -105,10 +112,12 @@ export function Sidebar({ className, onClose }: SidebarProps) {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     navGroups.forEach((g) => {
-      initial[g.id] = isGroupActive(g, pathname);
+      if (g.items.length > 1) {
+        initial[g.id] = isGroupActive(g, pathname);
+      }
     });
     if (!Object.values(initial).some(Boolean)) {
-      initial["dashboards"] = true;
+      initial["transactions"] = true;
     }
     return initial;
   });
@@ -117,7 +126,7 @@ export function Sidebar({ className, onClose }: SidebarProps) {
     setOpenGroups((prev) => {
       const next = { ...prev };
       navGroups.forEach((g) => {
-        if (isGroupActive(g, pathname)) {
+        if (g.items.length > 1 && isGroupActive(g, pathname)) {
           next[g.id] = true;
         }
       });
@@ -157,6 +166,41 @@ export function Sidebar({ className, onClose }: SidebarProps) {
       {/* Nav */}
       <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
         {navGroups.map((group) => {
+          // Single-item groups render as a direct nav link
+          if (group.items.length === 1) {
+            const item = group.items[0];
+            const active = item.exact
+              ? pathname === item.href
+              : pathname.startsWith(item.href);
+            return (
+              <div key={group.id} className="relative">
+                <Link
+                  href={item.href}
+                  onClick={onClose}
+                  className={cn(
+                    "group flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm transition-all duration-100 relative",
+                    active
+                      ? "bg-[hsl(var(--sidebar-accent))] text-foreground font-medium"
+                      : "text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent)/0.6)] hover:text-foreground",
+                  )}
+                >
+                  {active && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-3.5 rounded-full bg-violet-500" />
+                  )}
+                  <item.icon
+                    className={cn(
+                      "h-[14px] w-[14px] flex-shrink-0 transition-colors",
+                      active ? "text-violet-500" : "text-[hsl(var(--muted-foreground))] group-hover:text-foreground",
+                    )}
+                  />
+                  <span className="flex-1 text-[13px] font-medium">{group.label}</span>
+                  {active && <ChevronRight className="h-3 w-3 text-[hsl(var(--muted-foreground))]" />}
+                </Link>
+              </div>
+            );
+          }
+
+          // Multi-item groups are collapsible
           const isOpen = openGroups[group.id] ?? false;
           return (
             <div key={group.id}>
@@ -168,7 +212,7 @@ export function Sidebar({ className, onClose }: SidebarProps) {
                 <ChevronDown
                   className={cn(
                     "h-3 w-3 transition-transform duration-150",
-                    isOpen ? "rotate-0" : "-rotate-90"
+                    isOpen ? "rotate-0" : "-rotate-90",
                   )}
                 />
               </button>
@@ -188,7 +232,7 @@ export function Sidebar({ className, onClose }: SidebarProps) {
                           "group flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm transition-all duration-100 relative",
                           active
                             ? "bg-[hsl(var(--sidebar-accent))] text-foreground font-medium"
-                            : "text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent)/0.6)] hover:text-foreground"
+                            : "text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent)/0.6)] hover:text-foreground",
                         )}
                       >
                         {active && (
@@ -197,7 +241,7 @@ export function Sidebar({ className, onClose }: SidebarProps) {
                         <item.icon
                           className={cn(
                             "h-[14px] w-[14px] flex-shrink-0 transition-colors",
-                            active ? "text-violet-500" : "text-[hsl(var(--muted-foreground))] group-hover:text-foreground"
+                            active ? "text-violet-500" : "text-[hsl(var(--muted-foreground))] group-hover:text-foreground",
                           )}
                         />
                         <span className="flex-1 text-[13px]">{item.label}</span>
@@ -215,7 +259,7 @@ export function Sidebar({ className, onClose }: SidebarProps) {
       {/* Footer */}
       <div className="px-5 py-3 border-t border-[hsl(var(--sidebar-border))] flex-shrink-0">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-[hsl(var(--muted-foreground))]">v1.0 · 2026</span>
+          <span className="text-[11px] text-[hsl(var(--muted-foreground))]">v2.0 · 2026</span>
           <div className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[10px] text-emerald-500 font-medium">Live</span>
