@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -43,13 +44,24 @@ function TooltipShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function BankingDashboardPage() {
+function BankingDashboardContent() {
+  const searchParams = useSearchParams();
+  const fromReview = searchParams.get("from") === "review";
+  const rp = searchParams.get("rp") ?? "";
+  const urlStart = searchParams.get("start");
+  const urlEnd = searchParams.get("end");
+  const urlLabel = searchParams.get("rl") ?? "";
+
   const [period, setPeriod] = useState<PeriodValue>("30d");
   const [accountId, setAccountId] = useState<number | null>(null);
 
   const { data: accounts = [] } = useBankAccounts();
-  const dr    = getPeriodDates(period as Period);
+  const dr = (fromReview && urlStart && urlEnd)
+    ? { start: urlStart, end: urlEnd, label: urlLabel }
+    : getPeriodDates(period as Period);
   const days  = PERIODS.find(p => p.value === period)?.days ?? 30;
+
+  const backHref = rp ? `/review?period=${rp}` : "/review";
 
   const { data: kpis,       isLoading: kpisLoad } = useBankKpis(accountId, dr.start, dr.end);
   const { data: cashflow = []  }                  = useBankDailyCashflow(accountId, days);
@@ -65,7 +77,7 @@ export default function BankingDashboardPage() {
 
   return (
     <div className="min-h-full p-4 sm:p-6 space-y-5">
-      <PageHeader title="Banking" subtitle="Account balances, cashflow summary and reconciliation status" backHref="/review">
+      <PageHeader title="Banking" subtitle={fromReview ? dr.label : "Account balances, cashflow summary and reconciliation status"} backHref={backHref}>
         <div className="flex items-center gap-2 flex-wrap">
           <select
             value={accountId ?? ""}
@@ -78,22 +90,24 @@ export default function BankingDashboardPage() {
             ))}
           </select>
 
-          <div className="flex rounded-md border border-border overflow-hidden">
-            {PERIODS.map(p => (
-              <button
-                key={p.value}
-                onClick={() => setPeriod(p.value as PeriodValue)}
-                className={cn(
-                  "px-3 py-1.5 text-[11px] font-medium transition-colors",
-                  period === p.value
-                    ? "bg-violet-500/20 text-violet-400"
-                    : "bg-card text-muted-foreground hover:text-foreground hover:bg-accent"
-                )}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
+          {!fromReview && (
+            <div className="flex rounded-md border border-border overflow-hidden">
+              {PERIODS.map(p => (
+                <button
+                  key={p.value}
+                  onClick={() => setPeriod(p.value as PeriodValue)}
+                  className={cn(
+                    "px-3 py-1.5 text-[11px] font-medium transition-colors",
+                    period === p.value
+                      ? "bg-violet-500/20 text-violet-400"
+                      : "bg-card text-muted-foreground hover:text-foreground hover:bg-accent"
+                  )}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          )}
 
           <Link
             href="/dashboard/bank"
@@ -311,5 +325,13 @@ export default function BankingDashboardPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function BankingDashboardPage() {
+  return (
+    <Suspense>
+      <BankingDashboardContent />
+    </Suspense>
   );
 }

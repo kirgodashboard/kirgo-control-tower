@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Boxes,
   RefreshCw,
@@ -383,7 +384,11 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "true-demand", label: "True Demand" },
 ];
 
-export default function InventoryPage() {
+function InventoryPageContent() {
+  const searchParams = useSearchParams();
+  const rp = searchParams.get("rp") ?? "";
+  const backHref = rp ? `/review?period=${rp}` : "/review";
+
   const [tab, setTab] = useState<Tab>("position");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -412,7 +417,7 @@ export default function InventoryPage() {
       <PageHeader
         title="Inventory"
         subtitle="Stock position, movement, ageing and reorder intelligence"
-        backHref="/review"
+        backHref={backHref}
       >
         <button
           onClick={handleRefresh}
@@ -609,5 +614,13 @@ export default function InventoryPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function InventoryPage() {
+  return (
+    <Suspense>
+      <InventoryPageContent />
+    </Suspense>
   );
 }

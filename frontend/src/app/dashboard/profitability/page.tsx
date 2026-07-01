@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { PageHeader, PeriodTabs } from "@/components/ui/page-header";
 import { ProfitabilityKpiRow } from "@/features/profitability/kpi-row";
 import {
@@ -54,19 +55,33 @@ function periodDates(period: Period): { start: string; end: string; label: strin
   };
 }
 
-export default function ProfitabilityPage() {
+function ProfitabilityPageContent() {
+  const searchParams = useSearchParams();
+  const fromReview = searchParams.get("from") === "review";
+  const rp = searchParams.get("rp") ?? "";
+  const urlStart = searchParams.get("start");
+  const urlEnd = searchParams.get("end");
+  const urlLabel = searchParams.get("rl") ?? "";
+
   const [period, setPeriod] = useState<Period>("all");
   const [plTab, setPlTab] = useState<PlTab>("product");
-  const { start, end, label } = periodDates(period);
+
+  const { start, end, label } = (fromReview && urlStart && urlEnd)
+    ? { start: urlStart, end: urlEnd, label: urlLabel }
+    : periodDates(period);
+
+  const backHref = rp ? `/review?period=${rp}` : "/review";
 
   return (
     <div className="min-h-full p-4 sm:p-6 space-y-6">
-      <PageHeader title="Profitability" subtitle={label} backHref="/review">
-        <PeriodTabs
-          value={period}
-          options={PERIODS}
-          onChange={(k) => setPeriod(k as Period)}
-        />
+      <PageHeader title="Profitability" subtitle={label} backHref={backHref}>
+        {!fromReview && (
+          <PeriodTabs
+            value={period}
+            options={PERIODS}
+            onChange={(k) => setPeriod(k as Period)}
+          />
+        )}
       </PageHeader>
 
       {/* 6 KPI cards */}
@@ -132,6 +147,14 @@ export default function ProfitabilityPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProfitabilityPage() {
+  return (
+    <Suspense>
+      <ProfitabilityPageContent />
+    </Suspense>
   );
 }
 
@@ -203,7 +226,7 @@ function ProfitabilityWaterfall({ start, end }: { start: string; end: string }) 
       <div className="px-4 pt-4 pb-2">
         <p className="text-[17px] font-semibold text-foreground">P&amp;L Waterfall</p>
         <p className="text-[12px] text-muted-foreground/70 mt-0.5">
-          Total Revenue → Delivered → Gross Profit → Contribution → Net Profit
+          Revenue recognised on delivery (line-item basis) · Executive dashboard uses order_total on order date — intentional difference
         </p>
       </div>
       {/* Revenue recognition bridge: ties to Executive's booked revenue */}
@@ -230,7 +253,10 @@ function ProfitabilityWaterfall({ start, end }: { start: string; end: string }) 
         pct={kpis.net_margin_pct}
         isTotal
       />
-      {/* Memo — capex is capital, not an operating expense */}
+      {/* Memo rows — capital items and return logistics, not in contribution/net calc */}
+      {kpis.return_cost_inr > 0 && (
+        <WaterfallRow label="Memo: Return Freight (RTO)" value={kpis.return_cost_inr} pct={revPct(kpis.return_cost_inr)} isMinus />
+      )}
       <WaterfallRow label="Memo: Capex (capitalised)" value={kpis.capex_inr} pct={revPct(kpis.capex_inr)} isMinus />
       <WaterfallRow label="Cash after Capex" value={kpis.cash_after_capex_inr} pct={revPct(kpis.cash_after_capex_inr)} isTotal />
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { Suspense, useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
 import { useLogisticsRegister } from "@/lib/hooks/use-registers";
 import { formatINR, formatCount } from "@/lib/utils/format";
@@ -76,14 +77,24 @@ function rtoRiskBadge(risk: string | null) {
   return <span className={`text-[10px] font-semibold uppercase ${cls}`}>{risk}</span>;
 }
 
-export default function LogisticsRegisterPage() {
+function LogisticsRegisterContent() {
+  const searchParams = useSearchParams();
+  const fromReview = searchParams.get("from") === "review";
+  const rp = searchParams.get("rp") ?? "";
+  const urlStart = searchParams.get("start");
+  const urlEnd = searchParams.get("end");
+  const backHref = rp ? `/review?period=${rp}` : "/review";
+
   const [period, setPeriod] = useState<PeriodValue>("30d");
   const [status, setStatus] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [courier, setCourier] = useState("");
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
-  const dateRange = getPeriodDates(period);
+  const urlLabel = searchParams.get("rl") ?? "";
+  const dateRange = (fromReview && urlStart && urlEnd)
+    ? { start: urlStart, end: urlEnd, label: urlLabel }
+    : getPeriodDates(period);
 
   const { data, isLoading, isFetching, refetch } = useLogisticsRegister({
     start: dateRange.start,
@@ -163,7 +174,7 @@ export default function LogisticsRegisterPage() {
         <PageHeader
           title="Logistics Register"
           subtitle="Shipment-level view — AWB, courier status, COD reconciliation, delivery timeline"
-          backHref="/review"
+          backHref={backHref}
         />
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
@@ -192,9 +203,11 @@ export default function LogisticsRegisterPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3">
-        <select value={period} onChange={(e) => setPeriod(e.target.value as PeriodValue)} className={selectCls}>
-          {PERIODS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
-        </select>
+        {!fromReview && (
+          <select value={period} onChange={(e) => setPeriod(e.target.value as PeriodValue)} className={selectCls}>
+            {PERIODS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+          </select>
+        )}
         <select value={status} onChange={(e) => setStatus(e.target.value)} className={selectCls}>
           <option value="">All Statuses</option>
           {SHIPMENT_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -372,5 +385,13 @@ export default function LogisticsRegisterPage() {
         onClose={() => setSelectedOrderId(null)}
       />
     </div>
+  );
+}
+
+export default function LogisticsRegisterPage() {
+  return (
+    <Suspense>
+      <LogisticsRegisterContent />
+    </Suspense>
   );
 }

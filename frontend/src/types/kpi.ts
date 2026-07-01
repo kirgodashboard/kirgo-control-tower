@@ -106,7 +106,6 @@ export interface ProfitabilityKpis {
   shipping_cost_inr: number;
   cod_charges_inr: number;
   ad_spend_inr: number;
-  promo_spend_inr: number;
   contribution_margin_inr: number;
   contribution_margin_pct: number;
   return_cost_inr: number;

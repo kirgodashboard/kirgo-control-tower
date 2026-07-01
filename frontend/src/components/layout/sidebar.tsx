@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  TrendingUp, Users, Package, Landmark, Wallet, Boxes,
-  ShieldCheck, Building2, Globe,
+  Users, Package, Landmark, Wallet, Boxes,
+  ShieldCheck, Globe,
   ShoppingCart, Truck, ArrowDownCircle,
   ArrowUpCircle, ChevronDown, BookMarked, Inbox,
   ChevronRight, Receipt, X, LayoutDashboard,
@@ -60,27 +60,13 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/sales-register",    label: "Orders",            icon: ShoppingCart },
       { href: "/dashboard/logistics",         label: "Logistics",         icon: Truck },
       { href: "/dashboard/customer-register", label: "Customer Register", icon: Users },
+      { href: "/dashboard/inventory",         label: "Inventory",         icon: Boxes },
+      { href: "/dashboard/receivables",       label: "Receivables",       icon: Wallet },
+      { href: "/dashboard/bank",              label: "Bank Transactions", icon: Landmark },
       { href: "/dashboard/purchases",         label: "Purchases",         icon: Package },
       { href: "/dashboard/expenses",          label: "Expenses",          icon: Receipt },
       { href: "/dashboard/receipts",          label: "Receipts",          icon: ArrowDownCircle },
       { href: "/dashboard/payments",          label: "Payments",          icon: ArrowUpCircle },
-    ],
-  },
-  {
-    id: "inventory",
-    label: "Inventory",
-    items: [
-      { href: "/dashboard/inventory", label: "Stock & Inventory", icon: Boxes },
-    ],
-  },
-  {
-    id: "finance-bank",
-    label: "Finance & Bank",
-    items: [
-      { href: "/dashboard/banking",     label: "Banking Dashboard", icon: Building2 },
-      { href: "/dashboard/bank",        label: "Bank Register",     icon: Landmark },
-      { href: "/dashboard/receivables", label: "Receivables",       icon: Wallet },
-      { href: "/dashboard/finance",     label: "Finance & Cash",    icon: TrendingUp },
     ],
   },
   {

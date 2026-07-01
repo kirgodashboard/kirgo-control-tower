@@ -18,7 +18,7 @@ type Insight = { text: string; level: Level };
 function deriveInsights(snap: DirectorSnapshot): Insight[] {
   const out: Insight[] = [];
 
-  const rev = snap.revenue_mtd_change_pct;
+  const rev = snap.revenue_mtd_change_pct ?? 0;
   if (rev > 10) {
     out.push({ text: `Revenue up ${rev.toFixed(1)}% vs last month — strong growth momentum`, level: "green" });
   } else if (rev >= 0) {
@@ -27,7 +27,7 @@ function deriveInsights(snap: DirectorSnapshot): Insight[] {
     out.push({ text: `Revenue down ${Math.abs(rev).toFixed(1)}% vs last month — investigate demand signals`, level: "red" });
   }
 
-  const rr = snap.return_rate_pct;
+  const rr = snap.return_rate_pct ?? 0;
   if (rr < 8) {
     out.push({ text: `Return rate ${rr.toFixed(1)}% — healthy and well-controlled`, level: "green" });
   } else if (rr < 12) {
@@ -36,8 +36,8 @@ function deriveInsights(snap: DirectorSnapshot): Insight[] {
     out.push({ text: `Return rate ${rr.toFixed(1)}% — above limit, review product quality and sizing`, level: "red" });
   }
 
-  const cod = snap.cod_outstanding_inr;
-  const codCount = snap.cod_outstanding_count;
+  const cod = snap.cod_outstanding_inr ?? 0;
+  const codCount = snap.cod_outstanding_count ?? 0;
   if (cod > 1_00_000) {
     out.push({ text: `COD outstanding ${formatINR(cod)} across ${codCount} shipments — reconciliation overdue`, level: "red" });
   } else if (cod > 40_000) {
@@ -46,7 +46,7 @@ function deriveInsights(snap: DirectorSnapshot): Insight[] {
     out.push({ text: `COD position clean — ${formatINR(cod)} outstanding, well-reconciled`, level: "green" });
   }
 
-  const del = snap.delivery_success_pct;
+  const del = snap.delivery_success_pct ?? 0;
   if (del >= 87) {
     out.push({ text: `Delivery success ${del.toFixed(1)}% — logistics performing well`, level: "green" });
   } else if (del >= 75) {
@@ -55,7 +55,7 @@ function deriveInsights(snap: DirectorSnapshot): Insight[] {
     out.push({ text: `Delivery success ${del.toFixed(1)}% — critical, investigate courier performance`, level: "red" });
   }
 
-  const cash = snap.cash_position_inr;
+  const cash = snap.cash_position_inr ?? 0;
   if (cash > 2_00_000) {
     out.push({ text: `Cash position ${formatINR(cash)} — comfortable operating buffer`, level: "green" });
   } else if (cash > 50_000) {
@@ -81,23 +81,26 @@ function deriveProfitabilityInsights(
   const topCity   = [...cities].sort((a, b) => b.gross_profit_inr - a.gross_profit_inr)[0];
 
   if (topMargin) {
+    const m = topMargin.gross_margin_pct ?? 0;
     out.push({
-      text: `Best margin: ${topMargin.product_name} at ${topMargin.gross_margin_pct.toFixed(1)}%`,
-      level: topMargin.gross_margin_pct >= 35 ? "green" : "amber",
+      text: `Best margin: ${topMargin.product_name} at ${m.toFixed(1)}%`,
+      level: m >= 35 ? "green" : "amber",
     });
   }
 
   if (lowMargin && lowMargin.product_name !== topMargin?.product_name) {
+    const m = lowMargin.gross_margin_pct ?? 0;
     out.push({
-      text: `Watch: ${lowMargin.product_name} at ${lowMargin.gross_margin_pct.toFixed(1)}% — lowest margin product`,
-      level: lowMargin.gross_margin_pct < 20 ? "red" : "amber",
+      text: `Watch: ${lowMargin.product_name} at ${m.toFixed(1)}% — lowest margin product`,
+      level: m < 20 ? "red" : "amber",
     });
   }
 
   if (topCity) {
+    const m = topCity.gross_margin_pct ?? 0;
     out.push({
-      text: `Top city: ${topCity.city} — ${formatINR(topCity.gross_profit_inr)} gross profit, ${topCity.gross_margin_pct.toFixed(1)}% margin`,
-      level: topCity.gross_margin_pct >= 35 ? "green" : "amber",
+      text: `Top city: ${topCity.city} — ${formatINR(topCity.gross_profit_inr ?? 0)} gross profit, ${m.toFixed(1)}% margin`,
+      level: m >= 35 ? "green" : "amber",
     });
   }
 
@@ -120,16 +123,20 @@ function deriveProfitabilityInsights(
 
 function healthScore(snap: DirectorSnapshot): number {
   let score = 100;
-  if (snap.revenue_mtd_change_pct < 0)    score -= 20;
-  else if (snap.revenue_mtd_change_pct < 5) score -= 8;
-  if (snap.return_rate_pct > 12)           score -= 20;
-  else if (snap.return_rate_pct > 8)       score -= 8;
-  if (snap.delivery_success_pct < 75)      score -= 20;
-  else if (snap.delivery_success_pct < 87) score -= 8;
-  if (snap.cod_outstanding_inr > 1_00_000) score -= 10;
-  else if (snap.cod_outstanding_inr > 40_000) score -= 4;
-  if (snap.red_alert_count > 0)            score -= snap.red_alert_count * 8;
-  if (snap.amber_alert_count > 0)          score -= snap.amber_alert_count * 3;
+  const rev = snap.revenue_mtd_change_pct ?? 0;
+  const rr  = snap.return_rate_pct ?? 0;
+  const del = snap.delivery_success_pct ?? 0;
+  const cod = snap.cod_outstanding_inr ?? 0;
+  if (rev < 0)    score -= 20;
+  else if (rev < 5) score -= 8;
+  if (rr > 12)    score -= 20;
+  else if (rr > 8) score -= 8;
+  if (del < 75)   score -= 20;
+  else if (del < 87) score -= 8;
+  if (cod > 1_00_000) score -= 10;
+  else if (cod > 40_000) score -= 4;
+  if ((snap.red_alert_count ?? 0) > 0)   score -= (snap.red_alert_count ?? 0) * 8;
+  if ((snap.amber_alert_count ?? 0) > 0) score -= (snap.amber_alert_count ?? 0) * 3;
   return Math.max(0, Math.min(100, score));
 }
 

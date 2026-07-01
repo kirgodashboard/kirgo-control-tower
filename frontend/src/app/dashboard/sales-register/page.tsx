@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { Suspense, useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
 import { useSalesRegister } from "@/lib/hooks/use-registers";
 import {
@@ -99,14 +100,16 @@ function shipmentBadge(status: string | null) {
 
 // ─── Register tab ──────────────────────────────────────────────────────────
 
-function RegisterTab() {
+function RegisterTab({ fromReview = false, urlStart, urlEnd }: { fromReview?: boolean; urlStart?: string | null; urlEnd?: string | null }) {
   const [period, setPeriod] = useState<PeriodValue>("30d");
   const [orderStatus, setOrderStatus] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [city, setCity] = useState("");
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
-  const dateRange = getPeriodDates(period);
+  const dateRange = (fromReview && urlStart && urlEnd)
+    ? { start: urlStart, end: urlEnd, label: "" }
+    : getPeriodDates(period);
   const { data, isLoading, isFetching, refetch } = useSalesRegister({
     start: dateRange.start, end: dateRange.end,
     orderStatus: orderStatus || undefined,
@@ -172,9 +175,11 @@ function RegisterTab() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3">
-        <select value={period} onChange={e => setPeriod(e.target.value as PeriodValue)} className={selectCls}>
-          {PERIODS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-        </select>
+        {!fromReview && (
+          <select value={period} onChange={e => setPeriod(e.target.value as PeriodValue)} className={selectCls}>
+            {PERIODS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+          </select>
+        )}
         <select value={orderStatus} onChange={e => setOrderStatus(e.target.value)} className={selectCls}>
           <option value="">All Statuses</option>
           {ORDER_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -519,7 +524,14 @@ function ClassifyTab() {
 
 type Tab = "register" | "classify";
 
-export default function OrdersPage() {
+function OrdersPageContent() {
+  const searchParams = useSearchParams();
+  const fromReview = searchParams.get("from") === "review";
+  const rp = searchParams.get("rp") ?? "";
+  const urlStart = searchParams.get("start");
+  const urlEnd = searchParams.get("end");
+  const backHref = rp ? `/review?period=${rp}` : "/review";
+
   const [tab, setTab] = useState<Tab>("register");
 
   const tabCls = (t: Tab) =>
@@ -534,7 +546,7 @@ export default function OrdersPage() {
       <PageHeader
         title="Orders"
         subtitle="Sales register and order classification in one place"
-        backHref="/review"
+        backHref={backHref}
       />
 
       {/* Tab strip */}
@@ -543,7 +555,15 @@ export default function OrdersPage() {
         <button className={tabCls("classify")} onClick={() => setTab("classify")}>Classify</button>
       </div>
 
-      {tab === "register" ? <RegisterTab /> : <ClassifyTab />}
+      {tab === "register" ? <RegisterTab fromReview={fromReview} urlStart={urlStart} urlEnd={urlEnd} /> : <ClassifyTab />}
     </div>
+  );
+}
+
+export default function OrdersPage() {
+  return (
+    <Suspense>
+      <OrdersPageContent />
+    </Suspense>
   );
 }
