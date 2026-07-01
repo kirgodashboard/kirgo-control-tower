@@ -12,7 +12,10 @@ import {
   fetchLogisticsRegister,
   fetchCustomerRegister,
   fetchCustomerOrders,
+  addPurchaseOrder,
 } from "@/lib/data/registers";
+
+export { addPurchaseOrder };
 
 export function useOrderDetail(orderId: number | null) {
   return useQuery({

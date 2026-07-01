@@ -44,7 +44,7 @@ function periodDates(period: Period): { start: string; end: string; label: strin
   const today = new Date();
   const end = today.toISOString().slice(0, 10);
   if (period === "all") {
-    return { start: "2023-01-01", end, label: "All Time (since Oct 2023)" };
+    return { start: "2020-01-01", end, label: "All Time" };
   }
   const days = period === "30d" ? 30 : period === "90d" ? 90 : period === "1y" ? 365 : 180;
   const start = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);

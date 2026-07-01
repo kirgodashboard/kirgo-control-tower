@@ -2,11 +2,11 @@
 
 import { useState, useMemo } from "react";
 import { PageHeader } from "@/components/ui/page-header";
-import { usePurchaseRegister } from "@/lib/hooks/use-registers";
+import { usePurchaseRegister, addPurchaseOrder } from "@/lib/hooks/use-registers";
 import { formatINR, formatCount } from "@/lib/utils/format";
 import { exportToCsv, exportToExcel } from "@/lib/utils/export";
 import { getPeriodDates } from "@/lib/utils/date-ranges";
-import { Loader2, Download, FileSpreadsheet, RefreshCw } from "lucide-react";
+import { Loader2, Download, FileSpreadsheet, RefreshCw, Plus, X } from "lucide-react";
 import type { PurchaseRegisterRow } from "@/types/registers";
 
 const PERIODS = [
@@ -33,10 +33,190 @@ function statusBadge(status: string | null) {
   return <span className={`text-[11px] capitalize ${color}`}>{status}</span>;
 }
 
+// ── Add Purchase Modal ────────────────────────────────────────────────────────
+
+const CURRENCIES = ["INR", "USD", "EUR", "GBP", "CNY"];
+const PO_STATUSES = ["ordered", "partial", "received", "cancelled"];
+
+function AddPurchaseModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    supplier_name: "",
+    invoice_number: "",
+    invoice_date: new Date().toISOString().slice(0, 10),
+    currency: "INR",
+    total_foreign: "",
+    fx_rate_inr: "",
+    total_inr: "",
+    payment_terms: "",
+    status: "received",
+    notes: "",
+  });
+
+  const isForeign = form.currency !== "INR";
+
+  const inputCls = "w-full h-9 px-3 rounded-md border border-border bg-background text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-violet-500";
+
+  function set(k: string, v: string) { setForm((f) => ({ ...f, [k]: v })); }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.supplier_name.trim()) { setError("Supplier name is required"); return; }
+    if (!form.invoice_date) { setError("Invoice date is required"); return; }
+
+    let totalInr = parseFloat(form.total_inr);
+    if (isForeign) {
+      const foreign = parseFloat(form.total_foreign);
+      const fx = parseFloat(form.fx_rate_inr);
+      if (!isNaN(foreign) && !isNaN(fx)) totalInr = Math.round(foreign * fx * 100) / 100;
+    }
+    if (isNaN(totalInr) || totalInr < 0) { setError("Enter a valid total amount"); return; }
+
+    setSaving(true);
+    setError(null);
+    try {
+      await addPurchaseOrder({
+        supplier_name: form.supplier_name.trim(),
+        invoice_number: form.invoice_number.trim() || undefined,
+        invoice_date: form.invoice_date,
+        currency: form.currency,
+        total_foreign: isForeign && form.total_foreign ? parseFloat(form.total_foreign) : undefined,
+        fx_rate_inr: isForeign && form.fx_rate_inr ? parseFloat(form.fx_rate_inr) : undefined,
+        total_inr: totalInr,
+        payment_terms: form.payment_terms.trim() || undefined,
+        status: form.status,
+        notes: form.notes.trim() || undefined,
+      });
+      onSaved();
+      onClose();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-lg rounded-xl border border-border bg-card shadow-2xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <p className="text-[15px] font-semibold text-foreground">Add Purchase Order</p>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors"><X className="h-4 w-4" /></button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          {/* Row 1: Supplier + Invoice # */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Supplier *</label>
+              <input value={form.supplier_name} onChange={(e) => set("supplier_name", e.target.value)}
+                placeholder="e.g. Shanghai Jspeed" className={inputCls} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Invoice #</label>
+              <input value={form.invoice_number} onChange={(e) => set("invoice_number", e.target.value)}
+                placeholder="e.g. INV-001" className={inputCls} />
+            </div>
+          </div>
+
+          {/* Row 2: Date + Status */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Invoice Date *</label>
+              <input type="date" value={form.invoice_date} onChange={(e) => set("invoice_date", e.target.value)} className={inputCls} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</label>
+              <select value={form.status} onChange={(e) => set("status", e.target.value)} className={inputCls}>
+                {PO_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Row 3: Currency + Amount */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Currency</label>
+              <select value={form.currency} onChange={(e) => set("currency", e.target.value)} className={inputCls}>
+                {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            {isForeign ? (
+              <>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Amount ({form.currency})</label>
+                  <input type="number" step="0.01" min="0" value={form.total_foreign}
+                    onChange={(e) => set("total_foreign", e.target.value)}
+                    placeholder="0.00" className={inputCls} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">FX Rate (₹/1)</label>
+                  <input type="number" step="0.01" min="0" value={form.fx_rate_inr}
+                    onChange={(e) => set("fx_rate_inr", e.target.value)}
+                    placeholder="e.g. 84.00" className={inputCls} />
+                </div>
+              </>
+            ) : (
+              <div className="col-span-2 space-y-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Amount (₹ INR) *</label>
+                <input type="number" step="0.01" min="0" value={form.total_inr}
+                  onChange={(e) => set("total_inr", e.target.value)}
+                  placeholder="0.00" className={inputCls} />
+              </div>
+            )}
+          </div>
+
+          {/* Auto-computed INR total for foreign currency */}
+          {isForeign && form.total_foreign && form.fx_rate_inr && (
+            <p className="text-[12px] text-muted-foreground">
+              ≈ <span className="text-foreground font-medium">
+                {formatINR(Math.round(parseFloat(form.total_foreign) * parseFloat(form.fx_rate_inr) * 100) / 100)}
+              </span> will be recorded in INR
+            </p>
+          )}
+
+          {/* Payment terms */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Payment Terms</label>
+            <input value={form.payment_terms} onChange={(e) => set("payment_terms", e.target.value)}
+              placeholder="e.g. 30% deposit, 70% on delivery" className={inputCls} />
+          </div>
+
+          {/* Notes */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Notes</label>
+            <input value={form.notes} onChange={(e) => set("notes", e.target.value)}
+              placeholder="Optional notes" className={inputCls} />
+          </div>
+
+          {error && <p className="text-[12px] text-red-400">{error}</p>}
+
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <button type="button" onClick={onClose}
+              className="px-4 py-2 rounded-md border border-border text-[13px] text-muted-foreground hover:text-foreground hover:border-border/80 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" disabled={saving}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-violet-600 hover:bg-violet-500 text-[13px] text-white font-medium transition-colors disabled:opacity-60">
+              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+              {saving ? "Saving…" : "Save PO"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+
 export default function PurchasesPage() {
   const [period, setPeriod] = useState<PeriodValue>("all");
   const [supplier, setSupplier] = useState("");
   const [status, setStatus] = useState("");
+  const [showAdd, setShowAdd] = useState(false);
 
   const dateRange = getPeriodDates(period);
 
@@ -78,12 +258,23 @@ export default function PurchasesPage() {
 
   return (
     <div className="flex flex-col gap-5 p-4 sm:p-6">
+      {showAdd && (
+        <AddPurchaseModal
+          onClose={() => setShowAdd(false)}
+          onSaved={() => { refetch(); }}
+        />
+      )}
+
       <div className="flex items-start justify-between gap-4">
         <PageHeader
           title="Purchase Register"
           subtitle="All purchase orders from suppliers — cost and quantity tracking"
         />
         <div className="flex items-center gap-2 flex-shrink-0">
+          <button onClick={() => setShowAdd(true)}
+            className="inline-flex items-center gap-1.5 rounded-md bg-violet-600 hover:bg-violet-500 px-3 py-1.5 text-xs text-white font-medium transition-colors">
+            <Plus className="h-3.5 w-3.5" /> Add PO
+          </button>
           <button onClick={() => refetch()} disabled={isFetching}
             className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 text-xs text-foreground hover:border-primary/40 transition-colors disabled:opacity-60">
             {isFetching ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}

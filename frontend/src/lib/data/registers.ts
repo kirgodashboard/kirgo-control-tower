@@ -60,6 +60,22 @@ export async function fetchPurchaseRegister(params: {
   return (data ?? []) as PurchaseRegisterRow[];
 }
 
+export async function addPurchaseOrder(po: {
+  supplier_name: string;
+  invoice_number?: string;
+  invoice_date: string;
+  currency: string;
+  total_foreign?: number;
+  fx_rate_inr?: number;
+  total_inr: number;
+  payment_terms?: string;
+  status: string;
+  notes?: string;
+}): Promise<void> {
+  const { error } = await supabase.from("purchase_orders").insert([po]);
+  if (error) throw error;
+}
+
 export async function fetchExpensesRegister(params: {
   start?: string;
   end?: string;
