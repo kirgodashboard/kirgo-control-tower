@@ -96,6 +96,30 @@ export interface LaunchPerformance {
   aov_inr: number;
 }
 
+// ── Trading Account ───────────────────────────────────────────────────────────
+
+export interface TradingAccount {
+  revenue_inr: number;
+  purchases_inr: number;
+  purchase_order_count: number;
+  closing_stock_inr: number;
+  closing_stock_units: number;
+  goods_consumed_inr: number;
+  gross_profit_inr: number;
+  gross_margin_pct: number;
+  shipping_cost_inr: number;
+  cod_charges_inr: number;
+  ad_spend_inr: number;
+  contribution_margin_inr: number;
+  contribution_margin_pct: number;
+  opex_inr: number;
+  marketing_inr: number;
+  net_profit_inr: number;
+  net_margin_pct: number;
+  capex_inr: number;
+  cash_after_capex_inr: number;
+}
+
 // ── Profitability ────────────────────────────────────────────────────────────
 
 export interface ProfitabilityKpis {

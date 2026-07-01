@@ -9,6 +9,7 @@ import {
   fetchCityPl,
   fetchLaunchPl,
   fetchCustomerPl,
+  fetchTradingAccount,
 } from "@/lib/data/profitability";
 
 export function useProfitabilityKpis(start: string, end: string) {
@@ -56,6 +57,14 @@ export function useLaunchPl() {
     queryKey: ["launch-pl"],
     queryFn: fetchLaunchPl,
     staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useTradingAccount(start: string, end: string) {
+  return useQuery({
+    queryKey: ["trading-account", start, end],
+    queryFn: () => fetchTradingAccount(start, end),
+    staleTime: 5 * 60 * 1000,
   });
 }
 

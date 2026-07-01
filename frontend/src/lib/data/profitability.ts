@@ -7,6 +7,7 @@ import type {
   CityPl,
   LaunchPl,
   CustomerPl,
+  TradingAccount,
 } from "@/types/kpi";
 
 export async function fetchProfitabilityKpis(
@@ -73,6 +74,18 @@ export async function fetchProfitabilityTrend(
   });
   if (error) throw error;
   return (data ?? []) as ProfitabilityTrendPoint[];
+}
+
+export async function fetchTradingAccount(
+  start: string,
+  end: string,
+): Promise<TradingAccount> {
+  const { data, error } = await supabase.rpc("get_trading_account", {
+    p_start: start,
+    p_end: end,
+  });
+  if (error) throw error;
+  return data as TradingAccount;
 }
 
 export async function fetchCustomerPl(
