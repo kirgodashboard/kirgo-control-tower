@@ -125,3 +125,16 @@ export async function reconcileBankCredit(transactionId: number, type: string): 
   });
   if (error) throw error;
 }
+
+export interface BankCreditType { id: number; value: string; label: string; is_default: boolean; }
+
+export async function fetchBankCreditTypes(): Promise<BankCreditType[]> {
+  const { data, error } = await supabase.rpc("get_bank_credit_types");
+  if (error) throw error;
+  return (data ?? []) as BankCreditType[];
+}
+
+export async function addBankCreditType(value: string, label: string): Promise<void> {
+  const { error } = await supabase.rpc("add_bank_credit_type", { p_value: value, p_label: label });
+  if (error) throw error;
+}

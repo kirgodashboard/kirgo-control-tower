@@ -11,6 +11,8 @@ import {
   fetchUnclassifiedTransactions,
   insertExpenseCategory,
   reconcileBankCredit,
+  fetchBankCreditTypes,
+  addBankCreditType,
 } from "@/lib/data/expenses";
 
 export function useExpenseKpis(start: string, end: string) {
@@ -71,6 +73,23 @@ export function useUnclassifiedTransactions() {
     queryKey: ["unclassified-transactions"],
     queryFn: () => fetchUnclassifiedTransactions(50),
     staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useBankCreditTypes() {
+  return useQuery({
+    queryKey: ["bank-credit-types"],
+    queryFn: fetchBankCreditTypes,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useAddBankCreditType() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ value, label }: { value: string; label: string }) =>
+      addBankCreditType(value, label),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["bank-credit-types"] }),
   });
 }
 

@@ -22,6 +22,8 @@ import {
   useExpenseCategories,
   useInsertExpenseCategory,
   useReconcileBankCredit,
+  useBankCreditTypes,
+  useAddBankCreditType,
 } from "@/lib/hooks/use-expenses";
 import { classifyBankTransaction } from "@/lib/data/expenses";
 import { formatINR } from "@/lib/utils/format";
@@ -344,11 +346,13 @@ function DebitRow({
 // ─── Credit Row ────────────────────────────────────────────────────────────
 
 interface CreditRowState { type: string; saving: boolean; done: boolean; error: string | null; }
+interface CreditTypeOption { value: string; label: string; }
 
 function CreditRow({
-  tx, state, onChange, onReconcile,
+  tx, state, creditTypes, onChange, onReconcile,
 }: {
   tx: UnclassifiedTransaction; state: CreditRowState;
+  creditTypes: CreditTypeOption[];
   onChange: (type: string) => void; onReconcile: () => void;
 }) {
   if (state.done) {
@@ -381,7 +385,7 @@ function CreditRow({
           className="h-7 px-2 rounded-md border border-border bg-background text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-violet-500 w-56"
         >
           <option value="">Identify receipt type…</option>
-          {CREDIT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+          {creditTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
       </td>
       <td className="px-3 py-2">
@@ -413,7 +417,14 @@ export default function BankDashboardPage() {
   // Classification data
   const { data: unclassifiedTxns = [], isLoading: uTxLoading, isFetching: uFetching, refetch: uRefetch } = useUnclassifiedTransactions();
   const { data: expenseCategories = [], isLoading: catLoading } = useExpenseCategories();
+  const { data: creditTypes = [] } = useBankCreditTypes();
+  const { mutateAsync: addCreditType } = useAddBankCreditType();
   const { mutateAsync: reconcile } = useReconcileBankCredit();
+
+  // Add credit type inline form state
+  const [showAddCreditType, setShowAddCreditType] = useState(false);
+  const [newTypeLabel, setNewTypeLabel] = useState("");
+  const [addingType, setAddingType] = useState(false);
 
   const unclassDebits  = unclassifiedTxns.filter(t => t.tx_direction === "debit");
   const unclassCredits = unclassifiedTxns.filter(t => t.tx_direction === "credit");
@@ -644,11 +655,43 @@ export default function BankDashboardPage() {
 
             {/* Unidentified Credits */}
             <div className="rounded-xl border border-border bg-card">
-              <div className="px-5 py-3 border-b border-border flex items-center gap-2">
+              <div className="px-5 py-3 border-b border-border flex items-center gap-2 flex-wrap">
                 <ArrowUpRight className="h-4 w-4 text-blue-400" />
                 <p className="text-[13px] font-semibold text-foreground">Unidentified Credits</p>
-                <span className="ml-auto text-[11px] text-muted-foreground">Identify what each incoming receipt is</span>
+                <span className="text-[11px] text-muted-foreground">Identify what each incoming receipt is</span>
+                <button
+                  onClick={() => setShowAddCreditType(v => !v)}
+                  className="ml-auto inline-flex items-center gap-1 text-[11px] text-violet-400 hover:text-violet-300 transition-colors"
+                >
+                  <Plus className="h-3 w-3" /> Add receipt type
+                </button>
               </div>
+              {showAddCreditType && (
+                <div className="px-5 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
+                  <input
+                    value={newTypeLabel}
+                    onChange={e => setNewTypeLabel(e.target.value)}
+                    placeholder="e.g. B2B Invoice Payment"
+                    className="h-7 px-2 rounded-md border border-border bg-background text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-violet-500 flex-1"
+                  />
+                  <button
+                    disabled={!newTypeLabel.trim() || addingType}
+                    onClick={async () => {
+                      if (!newTypeLabel.trim()) return;
+                      setAddingType(true);
+                      try {
+                        await addCreditType({ value: newTypeLabel.trim(), label: newTypeLabel.trim() });
+                        setNewTypeLabel("");
+                        setShowAddCreditType(false);
+                      } finally { setAddingType(false); }
+                    }}
+                    className="h-7 px-3 rounded-md bg-violet-600 hover:bg-violet-500 text-white text-[11px] font-medium transition-colors disabled:opacity-50"
+                  >
+                    {addingType ? "Saving…" : "Add"}
+                  </button>
+                  <button onClick={() => setShowAddCreditType(false)} className="text-muted-foreground hover:text-foreground text-[11px]">Cancel</button>
+                </div>
+              )}
               {uTxLoading ? (
                 <div className="h-32 m-4 rounded-lg skeleton" />
               ) : unclassCredits.length === 0 ? (
@@ -673,6 +716,7 @@ export default function BankDashboardPage() {
                       {unclassCredits.map(tx => (
                         <CreditRow
                           key={tx.id} tx={tx} state={getCreditState(tx.id)}
+                          creditTypes={creditTypes}
                           onChange={type => updateCredit(tx.id, { type })}
                           onReconcile={() => handleReconcileCredit(tx)}
                         />
